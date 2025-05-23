@@ -1,7 +1,6 @@
+# AI Bulk Website Classifier
 ![Streamlit UI Screenshot](./images/streamlit_screenshot.png)
 ![Results Table Screenshot](./images/result_example.png)
-
-# AI Bulk Website Classifier
 
 [![oaicite:11](https://img.shields.io/badge/Playwright-1.48.2-brightgreen?style=for-the-badge\&logo=playwright\&logoColor=white)](https://playwright.dev/)
 [![oaicite:14](https://img.shields.io/badge/BeautifulSoup4-4.12.3-green?style=for-the-badge)](https://www.crummy.com/software/BeautifulSoup/bs4/doc/)
