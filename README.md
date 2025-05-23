@@ -1,4 +1,4 @@
-![Streamlit UI Screenshot](./images/streamlit_screenshot.png)
+****![Streamlit UI Screenshot](./images/streamlit_screenshot.png)
 ![Results Table Screenshot](./images/result_example.png)
 
 # AI Bulk Website Classifier
@@ -133,3 +133,67 @@ You can add your own classification categories by modifying the `openai_client.p
 
 Remember to update your classification logic if you also use the Streamlit interface.
 
+**Architecural Diagram**
+
+```mermaid
+graph LR;
+
+    %% == Subgraphs (Representing Layers/Zones) ==
+
+    subgraph "User Interaction Layer"
+        direction TB
+        CLI["CLI<br>(run_CLI_pipeline.py)"]:::userInteractionStyle
+        STREAMLIT["Streamlit App<br>(streamlit_app.py)"]:::userInteractionStyle
+    end
+
+    subgraph "Processing Core Modules"
+        direction LR
+        INPUT_HANDLER["Input Handler<br>(Domains from file/UI)"]:::coreModuleStyle
+        SITE_FETCHER["Site Fetcher<br>(src/fetcher_enhanced.py<br>- Playwright)"]:::coreModuleStyle
+        TEXT_ORCH["Text Extraction<br>Orchestrator"]:::coreModuleStyle
+        HTML_EXTRACT["HTML Text Extractor<br>(src/text_extractor.py<br>- BeautifulSoup)"]:::coreModuleStyle
+        OCR_MODULE["OCR Module<br>(src/ocr_module.py<br>- Pytesseract, Pillow)"]:::coreModuleStyle
+        AI_CLASSIFIER["AI Classifier<br>(src/openai_client.py)"]:::coreModuleStyle
+        RESULTS_WRITER["Results Writer<br>(src/writer.py)"]:::coreModuleStyle
+    end
+
+    subgraph "External Services"
+        OPENAI_API["OpenAI API /<br>Azure OpenAI Service"]:::externalServiceStyle
+    end
+
+    subgraph "Data Artifacts"
+        direction TB
+        INPUT_DATA["Input: domains.txt /<br>UI Text Area"]:::dataArtifactStyle
+        LOGS["Output: In-memory Logs<br>(Streamlit) /<br>Console Logs (CLI)"]:::dataArtifactStyle
+        OUTPUT_CSV["Output:<br>results_enhanced.csv"]:::dataArtifactStyle
+    end
+
+    %% == Connections ==
+    %% User Interaction to Core
+    CLI --> INPUT_HANDLER
+    STREAMLIT --> INPUT_HANDLER
+    INPUT_DATA --> INPUT_HANDLER
+
+    %% Core Processing Flow
+    INPUT_HANDLER --> SITE_FETCHER
+    SITE_FETCHER --> TEXT_ORCH
+    SITE_FETCHER -- "Generates Logs" --> LOGS
+    TEXT_ORCH -- "Chooses HTML" --> HTML_EXTRACT
+    TEXT_ORCH -- "Chooses OCR" --> OCR_MODULE
+    HTML_EXTRACT --> AI_CLASSIFIER
+    OCR_MODULE --> AI_CLASSIFIER
+    AI_CLASSIFIER --> RESULTS_WRITER
+    %% Connection to External Services
+    AI_CLASSIFIER --> OPENAI_API
+    RESULTS_WRITER --> OUTPUT_CSV
+
+    %% UI Displaying Logs
+    STREAMLIT -. "Displays" .-> LOGS
+
+    %% == Styling Definitions ==
+    %% Zone/Layer based styling (applied to nodes)
+    classDef userInteractionStyle fill:#cce5ff,stroke:#0050b3,stroke-width:2px,color:#000;
+    classDef coreModuleStyle fill:#d9f7be,stroke:#52c41a,stroke-width:2px,color:#000;
+    classDef externalServiceStyle fill:#ffe7ba,stroke:#fa8c16,stroke-width:2px,color:#000;
+    classDef dataArtifactStyle fill:#ffccc7,stroke:#f5222d,stroke-width:2px,color:#000;
+```
