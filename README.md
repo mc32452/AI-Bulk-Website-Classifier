@@ -76,7 +76,6 @@ If you prefer to use Azure OpenAI instead of OpenAI directly:
 ## Input
 
 - `domains.txt`: Newline-separated domains to classify (e.g., `example.com`).
-- `test_domains.txt`: A smaller list of domains for testing purposes.
 
 ## Usage
 
