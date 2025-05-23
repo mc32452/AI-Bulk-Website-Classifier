@@ -79,11 +79,21 @@ If you prefer to use Azure OpenAI instead of OpenAI directly:
 
 ## Usage
 
-The project provides a robust command-line interface for website classification:
+The project offers two main ways to classify websites: a command-line interface and a web-based Streamlit application.
 
-### `run_CLI_pipeline.py` (Command-Line Pipeline)
+### `streamlit_app.py` (Web Application)
 
-This script offers more granular control, especially for websites that might block headless browsers or employ bot detection.
+This application provides a user-friendly interface to input domains, start the classification process, and view results and logs in real-time.
+
+**To run the Streamlit app:**
+
+```bash
+streamlit run streamlit_app.py
+```
+
+### `run_CLI_pipeline.py` (Command-Line Interface)
+
+This script provides a command-line interface for processing websites. It allows for batch processing and configuration through command-line arguments.
 
 **Key Features & Options:**
 
