@@ -1,4 +1,4 @@
-****![Streamlit UI Screenshot](./images/streamlit_screenshot.png)
+![Streamlit UI Screenshot](./images/streamlit_screenshot.png)
 ![Results Table Screenshot](./images/result_example.png)
 
 # AI Bulk Website Classifier
