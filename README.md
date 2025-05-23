@@ -3,6 +3,15 @@
 
 # AI Bulk Website Classifier
 
+[![oaicite:11](https://img.shields.io/badge/Playwright-1.48.2-brightgreen?style=for-the-badge\&logo=playwright\&logoColor=white)](https://playwright.dev/)
+[![oaicite:14](https://img.shields.io/badge/BeautifulSoup4-4.12.3-green?style=for-the-badge)](https://www.crummy.com/software/BeautifulSoup/bs4/doc/)
+[![oaicite:17](https://img.shields.io/badge/pytesseract-0.3.10-blue?style=for-the-badge)](https://pypi.org/project/pytesseract/)
+[![oaicite:20](https://img.shields.io/badge/Pillow-9.5.0-yellow?style=for-the-badge)](https://pillow.readthedocs.io/en/stable/)
+[![oaicite:23](https://img.shields.io/badge/OpenAI-0.27.0-93f6ef?style=for-the-badge\&logo=openai)](https://platform.openai.com/docs)
+[![oaicite:26](https://img.shields.io/badge/python--dotenv-1.0.0-lightgrey?style=for-the-badge)](https://pypi.org/project/python-dotenv/)
+[![oaicite:29](https://img.shields.io/badge/Streamlit-1.32.0-FF4B4B?style=for-the-badge\&logo=streamlit\&logoColor=white)](https://streamlit.io/)
+
+
 This project scans a list of domains, fetches page HTML and screenshots, extracts text via BeautifulSoup and locally run OCR, and classifies sites using OpenAI's API (Or Azure OpenAI) with function calling.
 
 ## Prerequisites
