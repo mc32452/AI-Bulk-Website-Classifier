@@ -133,7 +133,7 @@ You can add your own classification categories by modifying the `openai_client.p
 
 Remember to update your classification logic if you also use the Streamlit interface.
 
-**Architecural Diagram**
+## **Architecural Diagram**
 
 ```mermaid
 graph LR;
