@@ -92,6 +92,10 @@ export function WebsiteClassifier() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
+  const [streamingResults, setStreamingResults] = useState<ClassificationResult[]>([]);
+  const [processedCount, setProcessedCount] = useState(0);
+  const [totalCount, setTotalCount] = useState(0);
+  const [streamingMode, setStreamingMode] = useState(false);
   const [showConfig, setShowConfig] = useState(false);
   const [config, setConfig] = useState<ProcessingConfig>({
     method: "HTML",
@@ -152,7 +156,7 @@ export function WebsiteClassifier() {
     if (results.length > 0 && showConfig) {
       setShowConfig(false);
     }
-  }, [results.length]); // Remove showConfig from dependency array
+  }, [results.length, showConfig]);
 
   const parseDomains = (text: string): string[] => {
     return text.trim().split('\n').filter(line => line.trim()).map(line => line.trim());
@@ -181,9 +185,152 @@ export function WebsiteClassifier() {
       return;
     }
 
+    // Use streaming for real-time updates
+    await handleStreamingProcess(domainList);
+  };
+
+  const handleStreamingProcess = async (domainList: string[]) => {
     setIsProcessing(true);
     setProgress(0);
     setResults([]); // Clear previous results
+    setStreamingResults([]); // Clear streaming results
+    setProcessedCount(0);
+    setTotalCount(domainList.length);
+    setStreamingMode(true);
+    
+    try {
+      const response = await fetch('/api/process-stream', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          domains: domainList,
+          config: {
+            method: config.method,
+            headless: config.headless,
+            antiDetection: config.antiDetection,
+            workers: config.workers,
+            overwrite: config.overwrite
+          }
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to start streaming process');
+      }
+
+      if (!response.body) {
+        throw new Error('No response body available');
+      }
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+
+      try {
+        while (true) {
+          const { done, value } = await reader.read();
+          
+          if (done) break;
+          
+          const chunk = decoder.decode(value);
+          const lines = chunk.split('\n');
+          
+          for (const line of lines) {
+            if (line.startsWith('data: ')) {
+              try {
+                const data = JSON.parse(line.slice(6));
+                
+                switch (data.type) {
+                  case 'progress': {
+                    setProgress(data.data.progress || 0);
+                    setProcessedCount(data.data.processed || 0);
+                    break;
+                  }
+                    
+                  case 'result': {
+                    const newResult = data.data.result;
+                    setStreamingResults(prev => [...prev, newResult]);
+                    setResults(prev => [...prev, newResult]);
+                    setProgress(data.data.progress || 0);
+                    setProcessedCount(data.data.processed || 0);
+                    
+                    // Optional: Show toast for each result
+                    // toast({
+                    //   title: `${newResult.domain}`,
+                    //   description: `Classified as ${newResult.classification_label}`,
+                    //   duration: 1000,
+                    // });
+                    break;
+                  }
+                    
+                  case 'complete': {
+                    const totalProcessed = data.data.total_processed || 0;
+                    const errors = data.data.errors || 0;
+                    const message = data.data.message || "Scan complete!";
+                    
+                    toast({
+                      title: "Scan complete!",
+                      description: errors > 0 ? `${message}, ${errors} errors` : message,
+                    });
+                    break;
+                  }
+                    
+                  case 'error': {
+                    throw new Error(data.data.error || 'Streaming error occurred');
+                  }
+                }
+              } catch (parseError) {
+                console.warn('Failed to parse SSE data:', parseError);
+              }
+            }
+          }
+        }
+      } finally {
+        reader.releaseLock();
+      }
+
+    } catch (error) {
+      console.error('Streaming error:', error);
+      toast({
+        title: "Processing failed", 
+        description: error instanceof Error ? error.message : "An error occurred while processing domains.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsProcessing(false);
+      setStreamingMode(false);
+      setProgress(100);
+    }
+  };
+
+  const handleProcessFallback = async () => {
+    const domainList = parseDomains(domains);
+    
+    if (domainList.length === 0) {
+      toast({
+        title: "No domains provided",
+        description: "Please enter at least one domain to process.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Check backend health
+    const isHealthy = await checkBackendHealth();
+    if (!isHealthy) {
+      toast({
+        title: "Backend Unavailable",
+        description: "The backend service is not responding. Please check if it's running on port 5001.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsProcessing(true);
+    setProgress(0);
+    setResults([]); // Clear previous results
+    setStreamingMode(false);
     
     try {
       const response = await fetch('/api/process', {
@@ -217,7 +364,7 @@ export function WebsiteClassifier() {
       const skipped = data.skipped || 0;
       
       // Create detailed success message
-      let title = "Scan complete!";
+      const title = "Scan complete!";
       let description = "";
       
       if (totalProcessed > 0 && skipped > 0) {
@@ -498,34 +645,143 @@ export function WebsiteClassifier() {
           <div className="lg:col-span-9 flex flex-col min-h-0 order-1 lg:order-2">
             <div className="bg-muted/20 rounded-lg border border-border/30 p-1 h-full flex flex-col">
               {isProcessing ? (
-                /* Loading State with Skeleton */
+                /* Loading State with Skeleton and Live Updates */
                 <div className="flex flex-col h-full space-y-3 p-3">
                   <div className="space-y-3">
-                    <h3 className="text-sm font-semibold text-foreground">Processing...</h3>
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-sm font-semibold text-foreground">
+                        {streamingMode ? 'Processing Live...' : 'Processing...'}
+                      </h3>
+                      {streamingMode && (
+                        <span className="text-xs text-muted-foreground">
+                          {processedCount} of {totalCount} domains
+                        </span>
+                      )}
+                    </div>
                     <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-                      {['total', 'marketing', 'portal', 'other', 'errors'].map((stat) => (
-                        <div key={stat} className="bg-card p-4 rounded-md border border-border/40">
-                          <div className="h-8 bg-muted/50 rounded skeleton mb-2" />
-                          <div className="h-3 bg-muted/30 rounded skeleton w-16" />
-                        </div>
-                      ))}
+                      {streamingMode ? (
+                        <>
+                          <div className="bg-card p-4 rounded-md border border-border/40">
+                            <div className="text-2xl font-bold text-foreground">{streamingResults.length}</div>
+                            <p className="text-xs text-muted-foreground">Total</p>
+                          </div>
+                          <div className="bg-card p-4 rounded-md border border-border/40">
+                            <div className="text-2xl font-bold text-foreground">
+                              {streamingResults.filter(r => r.classification_label === "Marketing").length}
+                            </div>
+                            <p className="text-xs text-muted-foreground">Marketing</p>
+                          </div>
+                          <div className="bg-card p-4 rounded-md border border-border/40">
+                            <div className="text-2xl font-bold text-foreground">
+                              {streamingResults.filter(r => r.classification_label === "Portal").length}
+                            </div>
+                            <p className="text-xs text-muted-foreground">Portal</p>
+                          </div>
+                          <div className="bg-card p-4 rounded-md border border-border/40">
+                            <div className="text-2xl font-bold text-foreground">
+                              {streamingResults.filter(r => r.classification_label === "Other").length}
+                            </div>
+                            <p className="text-xs text-muted-foreground">Other</p>
+                          </div>
+                          <div className="bg-card p-4 rounded-md border border-border/40">
+                            <div className="text-2xl font-bold text-red-500">
+                              {streamingResults.filter(r => r.classification_label === "Error").length}
+                            </div>
+                            <p className="text-xs text-muted-foreground">Errors</p>
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          {['total', 'marketing', 'portal', 'other', 'errors'].map((stat) => (
+                            <div key={stat} className="bg-card p-4 rounded-md border border-border/40">
+                              <div className="h-8 bg-muted/50 rounded skeleton mb-2" />
+                              <div className="h-3 bg-muted/30 rounded skeleton w-16" />
+                            </div>
+                          ))}
+                        </>
+                      )}
                     </div>
                   </div>
                   <div className="flex flex-col flex-1 min-h-0 space-y-3">
                     <div className="flex items-center justify-between py-2 border-b border-border/20">
-                      <h3 className="text-sm font-semibold text-foreground">Processing Domains...</h3>
+                      <h3 className="text-sm font-semibold text-foreground">
+                        {streamingMode ? 'Live Results' : 'Processing Domains...'}
+                      </h3>
+                      {streamingMode && (
+                        <div className="text-xs text-muted-foreground">
+                          Progress: {progress}%
+                        </div>
+                      )}
                     </div>
-                    <div className="flex-1 border border-border/40 rounded-md overflow-hidden bg-background min-h-0 p-4">
-                      <div className="space-y-3">
-                        {parseDomains(domains).slice(0, 6).map((domain) => (
-                          <div key={domain} className="flex items-center space-x-4">
-                            <div className="h-4 bg-muted/50 rounded skeleton w-32" />
-                            <div className="h-6 bg-muted/50 rounded skeleton w-20" />
-                            <div className="h-4 bg-muted/30 rounded skeleton flex-1" />
-                            <div className="h-4 bg-muted/30 rounded skeleton w-12" />
+                    <div className="flex-1 border border-border/40 rounded-md overflow-hidden bg-background min-h-0">
+                      {streamingMode && streamingResults.length > 0 ? (
+                        /* Live Results Table */
+                        <div className="h-full overflow-auto">
+                          <Table>
+                            <TableHeader>
+                              <TableRow className="border-border/40 bg-muted/30 hover:bg-muted/30">
+                                <TableHead className="text-xs font-medium text-foreground h-7">
+                                  Domain
+                                </TableHead>
+                                <TableHead className="text-xs font-medium text-foreground h-7">
+                                  Classification
+                                </TableHead>
+                                <TableHead className="text-xs font-medium text-foreground h-7">
+                                  Summary
+                                </TableHead>
+                                <TableHead className="text-xs font-medium text-foreground h-7 text-right">
+                                  Confidence
+                                </TableHead>
+                              </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                              {streamingResults.map((result, index) => (
+                                <TableRow 
+                                  key={`${result.domain}-${index}`}
+                                  className="border-border/40 hover:bg-muted/20 transition-colors animate-in slide-in-from-top-1 duration-300"
+                                >
+                                  <TableCell className="font-mono text-xs text-foreground py-1.5">
+                                    {result.domain}
+                                  </TableCell>
+                                  <TableCell className="py-1.5">
+                                    <Badge 
+                                      variant={
+                                        result.classification_label === "Marketing" ? "outline" :
+                                        result.classification_label === "Portal" ? "outline" :
+                                        result.classification_label === "Error" ? "destructive" :
+                                        "outline"
+                                      }
+                                      className="text-xs rounded-md"
+                                    >
+                                      {result.classification_label}
+                                    </Badge>
+                                  </TableCell>
+                                  <TableCell className="text-xs text-muted-foreground py-1.5 max-w-xs truncate">
+                                    {result.summary}
+                                  </TableCell>
+                                  <TableCell className="text-xs font-mono text-foreground py-1.5 text-right">
+                                    {(result.confidence_level * 100).toFixed(1)}%
+                                  </TableCell>
+                                </TableRow>
+                              ))}
+                            </TableBody>
+                          </Table>
+                        </div>
+                      ) : (
+                        /* Skeleton Loading */
+                        <div className="p-4">
+                          <div className="space-y-3">
+                            {parseDomains(domains).slice(0, 6).map((domain) => (
+                              <div key={domain} className="flex items-center space-x-4">
+                                <div className="h-4 bg-muted/50 rounded skeleton w-32" />
+                                <div className="h-6 bg-muted/50 rounded skeleton w-20" />
+                                <div className="h-4 bg-muted/30 rounded skeleton flex-1" />
+                                <div className="h-4 bg-muted/30 rounded skeleton w-12" />
+                              </div>
+                            ))}
                           </div>
-                        ))}
-                      </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
