@@ -1,0 +1,8 @@
+flask
+flask-cors
+playwright
+beautifulsoup4
+pytesseract
+Pillow
+openai
+python-dotenv

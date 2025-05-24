@@ -15,6 +15,31 @@ from src.openai_client import classify_site
 from src.writer import write_results
 
 
+def extract_snippet(text_content: str, ocr_content: str, max_length: int = 200) -> str:
+    """Extract a meaningful snippet from the text content for display purposes"""
+    # Combine both text sources
+    combined_text = f"{text_content} {ocr_content}".strip()
+    
+    if not combined_text:
+        return "No content available"
+    
+    # Clean up the text - remove extra whitespace and newlines
+    cleaned_text = ' '.join(combined_text.split())
+    
+    # If text is shorter than max_length, return as-is
+    if len(cleaned_text) <= max_length:
+        return cleaned_text
+    
+    # Try to cut at a word boundary
+    snippet = cleaned_text[:max_length]
+    last_space = snippet.rfind(' ')
+    
+    if last_space > max_length * 0.8:  # If we can cut at a word boundary reasonably close to the end
+        snippet = snippet[:last_space]
+    
+    return snippet + "..."
+
+
 def load_domains(path: str = 'domains.txt'):
     """
     Reads domains from a newline-separated text file.
@@ -34,7 +59,7 @@ def process_domain(domain: str, text_method: str = 'html', headless: bool = True
         anti_detection: If True, applies anti-bot detection measures
         
     Returns:
-        Classification dict.
+        Classification dict with snippet included.
     """
     try:
         html, screenshot = fetch_site_enhanced(domain, headless=headless, anti_detection=anti_detection)
@@ -50,12 +75,28 @@ def process_domain(domain: str, text_method: str = 'html', headless: bool = True
             ocr_content = ocr_image(screenshot)
         else:
             raise ValueError(f"Invalid text_method: {text_method}")
+        
+        # Extract snippet for storage
+        snippet = extract_snippet(text_content, ocr_content)
             
         result = classify_site(domain, text_content, ocr_content)
+        
+        # Ensure confidence_level exists
+        if "confidence_level" not in result:
+            result["confidence_level"] = 0.0
+        
+        # Add snippet to result
+        result["snippet"] = snippet
         return result
     except Exception as e:
         logging.error(f"Error processing {domain}: {e}")
-        return {"domain": domain, "classification_label": "Error", "summary": str(e)}
+        return {
+            "domain": domain, 
+            "classification_label": "Error", 
+            "summary": str(e),
+            "confidence_level": 0.0,
+            "snippet": "Error occurred during processing"
+        }
 
 
 def main():
