@@ -461,7 +461,7 @@ export function WebsiteClassifier() {
                     <h3 className="text-sm font-semibold text-foreground">Processing...</h3>
                     <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
                       {['total', 'marketing', 'portal', 'other', 'errors'].map((stat) => (
-                        <div key={stat} className="bg-[#1a1a1a] p-4 rounded-md border border-border/40">
+                        <div key={stat} className="bg-card p-4 rounded-md border border-border/40">
                           <div className="h-8 bg-muted/50 rounded skeleton mb-2"></div>
                           <div className="h-3 bg-muted/30 rounded skeleton w-16"></div>
                         </div>
@@ -492,23 +492,23 @@ export function WebsiteClassifier() {
                   <div className="space-y-3">
                     <h3 className="text-sm font-semibold text-foreground">Summary</h3>
                     <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
-                      <div className="bg-[#1a1a1a] p-4 rounded-md border border-border/40 hover:bg-[#1e1e1e] transition-colors">
+                      <div className="bg-card p-4 rounded-md border border-border/40 hover:bg-muted/50 transition-colors">
                         <div className="text-2xl font-bold text-foreground">{stats.total}</div>
                         <p className="text-xs text-muted-foreground">Total</p>
                       </div>
-                      <div className="bg-[#1a1a1a] p-4 rounded-md border border-border/40 hover:bg-[#1e1e1e] transition-colors">
+                      <div className="bg-card p-4 rounded-md border border-border/40 hover:bg-muted/50 transition-colors">
                         <div className="text-2xl font-bold text-accent">{stats.marketing}</div>
                         <p className="text-xs text-muted-foreground">Marketing</p>
                       </div>
-                      <div className="bg-[#1a1a1a] p-4 rounded-md border border-border/40 hover:bg-[#1e1e1e] transition-colors">
+                      <div className="bg-card p-4 rounded-md border border-border/40 hover:bg-muted/50 transition-colors">
                         <div className="text-2xl font-bold text-accent">{stats.portal}</div>
                         <p className="text-xs text-muted-foreground">Portal</p>
                       </div>
-                      <div className="bg-[#1a1a1a] p-4 rounded-md border border-border/40 hover:bg-[#1e1e1e] transition-colors">
+                      <div className="bg-card p-4 rounded-md border border-border/40 hover:bg-muted/50 transition-colors">
                         <div className={`text-2xl font-bold ${stats.other > 0 ? 'text-foreground' : 'text-muted-foreground'}`}>{stats.other}</div>
                         <p className="text-xs text-muted-foreground">Other</p>
                       </div>
-                      <div className="bg-[#1a1a1a] p-4 rounded-md border border-border/40 hover:bg-[#1e1e1e] transition-colors">
+                      <div className="bg-card p-4 rounded-md border border-border/40 hover:bg-muted/50 transition-colors">
                         <div className={`text-2xl font-bold ${stats.errors > 0 ? 'text-red-500' : 'text-muted-foreground'}`}>{stats.errors}</div>
                         <p className="text-xs text-muted-foreground">Errors</p>
                       </div>
@@ -565,8 +565,8 @@ export function WebsiteClassifier() {
                                 <TableCell className="py-1.5">
                                   <Badge 
                                     variant={
-                                      result.classification_label === "Marketing" ? "default" :
-                                      result.classification_label === "Portal" ? "secondary" :
+                                      result.classification_label === "Marketing" ? "outline" :
+                                      result.classification_label === "Portal" ? "outline" :
                                       result.classification_label === "Error" ? "destructive" :
                                       "outline"
                                     }
@@ -575,7 +575,7 @@ export function WebsiteClassifier() {
                                     {result.classification_label}
                                   </Badge>
                                 </TableCell>
-                                <TableCell className="text-xs text-neutral-600 py-1.5 max-w-xs">
+                                <TableCell className="text-xs text-muted-foreground py-1.5 max-w-xs">
                                   <div className="truncate">
                                     {result.summary}
                                   </div>
