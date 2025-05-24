@@ -497,11 +497,11 @@ export function WebsiteClassifier() {
                         <p className="text-xs text-muted-foreground">Total</p>
                       </div>
                       <div className="bg-card p-4 rounded-md border border-border/40 hover:bg-muted/50 transition-colors">
-                        <div className="text-2xl font-bold text-accent">{stats.marketing}</div>
+                        <div className="text-2xl font-bold text-foreground">{stats.marketing}</div>
                         <p className="text-xs text-muted-foreground">Marketing</p>
                       </div>
                       <div className="bg-card p-4 rounded-md border border-border/40 hover:bg-muted/50 transition-colors">
-                        <div className="text-2xl font-bold text-accent">{stats.portal}</div>
+                        <div className="text-2xl font-bold text-foreground">{stats.portal}</div>
                         <p className="text-xs text-muted-foreground">Portal</p>
                       </div>
                       <div className="bg-card p-4 rounded-md border border-border/40 hover:bg-muted/50 transition-colors">
