@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,8 +9,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Slider } from "@/components/ui/slider";
 import { Progress } from "@/components/ui/progress";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Toaster } from "@/components/ui/toaster";
@@ -19,18 +16,18 @@ import { useToast } from "@/hooks/use-toast";
 import { 
   Play, 
   Download, 
-  Settings, 
-  Globe, 
   Activity, 
-  BarChart3,
   Search,
-  AlertCircle,
-  CheckCircle,
-  Clock,
   FileText,
-  Eye,
   Moon,
-  Sun
+  Sun,
+  Settings,
+  ChevronDown,
+  ChevronUp,
+  TrendingUp,
+  Globe,
+  AlertCircle,
+  HelpCircle
 } from "lucide-react";
 import { useTheme } from "next-themes";
 
@@ -70,14 +67,15 @@ function ThemeToggle() {
 
   return (
     <Button
-      variant="outline"
-      size="icon"
+      variant="ghost"
+      size="sm"
       onClick={() => setTheme(theme === "light" ? "dark" : "light")}
+      className="h-8 w-8 p-0 hover:bg-secondary/60 border border-border/40"
     >
       {theme === "light" ? (
-        <Moon className="h-4 w-4" />
+        <Moon className="h-3 w-3" />
       ) : (
-        <Sun className="h-4 w-4" />
+        <Sun className="h-3 w-3" />
       )}
     </Button>
   );
@@ -89,6 +87,7 @@ export function WebsiteClassifier() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
+  const [showConfig, setShowConfig] = useState(false);
   const [config, setConfig] = useState<ProcessingConfig>({
     method: "HTML",
     headless: true,
@@ -129,6 +128,13 @@ export function WebsiteClassifier() {
     const interval = setInterval(checkBackendHealth, 30000); // Check every 30 seconds
     return () => clearInterval(interval);
   }, [checkBackendHealth]);
+
+  // Auto-collapse configuration when results are shown
+  useEffect(() => {
+    if (results.length > 0 && showConfig) {
+      setShowConfig(false);
+    }
+  }, [results.length, showConfig]);
 
   const parseDomains = (text: string): string[] => {
     return text.trim().split('\n').filter(line => line.trim()).map(line => line.trim());
@@ -188,9 +194,27 @@ export function WebsiteClassifier() {
       setResults(data.results);
       setProgress(100);
 
+      // Use detailed statistics from backend response
+      const totalProcessed = data.total_processed || 0;
+      const skipped = data.skipped || 0;
+      
+      // Create detailed success message
+      let title = "Scan complete!";
+      let description = "";
+      
+      if (totalProcessed > 0 && skipped > 0) {
+        description = `${totalProcessed} new scan${totalProcessed !== 1 ? 's' : ''}, ${skipped} already in database`;
+      } else if (totalProcessed > 0) {
+        description = `${totalProcessed} new scan${totalProcessed !== 1 ? 's' : ''} completed`;
+      } else if (skipped > 0) {
+        description = `${skipped} domain${skipped !== 1 ? 's' : ''} already in database`;
+      } else {
+        description = `Successfully processed ${domainList.length} domain${domainList.length !== 1 ? 's' : ''}`;
+      }
+
       toast({
-        title: "Processing complete",
-        description: `Successfully processed ${domainList.length} domains.`
+        title: title,
+        description: description
       });
     } catch (error) {
       console.error('Processing error:', error);
@@ -232,288 +256,368 @@ export function WebsiteClassifier() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto p-6 space-y-6">
-      {/* Add status bar with theme toggle */}
-      <div className="bg-muted/50 p-4 rounded-lg">
-        <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold">Bulk Website Classifier</h1>
-          <div className="flex items-center space-x-4">
-            <ThemeToggle />
-            <div className="flex items-center space-x-2">
-              <div className={`w-2 h-2 rounded-full ${healthStatus.backend ? 'bg-green-500' : 'bg-red-500'}`} />
-              <span className="text-sm text-muted-foreground">
+    <div className="min-h-screen bg-background">
+      {/* Simplified Status Bar */}
+      <div className="border-b border-border/40 bg-muted/30">
+        <div className="max-w-7xl mx-auto px-4 md:px-8 py-1.5">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className={`w-1.5 h-1.5 rounded-full ${healthStatus.backend ? 'bg-accent' : 'bg-destructive'}`} />
+              <span className="text-xs text-muted-foreground">
                 Backend: {healthStatus.backend ? 'Connected' : 'Disconnected'}
               </span>
             </div>
-            {healthStatus.lastChecked && (
-              <span className="text-xs text-muted-foreground">
-                Last checked: {healthStatus.lastChecked.toLocaleTimeString()}
-              </span>
-            )}
+            <ThemeToggle />
           </div>
         </div>
-        <p className="text-muted-foreground mt-2">
-          Classify websites as Marketing, Portal, or Other using AI-powered analysis
-        </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left Column - Input & Configuration */}
-        <div className="lg:col-span-1 space-y-6">
-          {/* Domain Input */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Globe className="w-5 h-5" />
-                Input Domains
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="domains">Domains (one per line)</Label>
-                <Textarea
-                  id="domains"
-                  placeholder="example.com&#10;google.com&#10;openai.com"
-                  value={domains}
-                  onChange={(e) => setDomains(e.target.value)}
-                  className="min-h-[150px] font-mono text-sm"
-                />
-              </div>
-              {domains && (
-                <div className="text-sm text-muted-foreground">
-                  {parseDomains(domains).length} domains ready to process
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Configuration */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Settings className="w-5 h-5" />
-                Configuration
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label>Text Extraction Method</Label>
-                <Select 
-                  value={config.method} 
-                  onValueChange={(value: "HTML" | "OCR") => 
-                    setConfig(prev => ({ ...prev, method: value }))
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="HTML">HTML Parsing</SelectItem>
-                    <SelectItem value="OCR">OCR (Screenshots)</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="headless"
-                  checked={config.headless}
-                  onCheckedChange={(checked) => 
-                    setConfig(prev => ({ ...prev, headless: !!checked }))
-                  }
-                />
-                <Label htmlFor="headless">Headless Mode</Label>
-              </div>
-
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="antiDetection"
-                  checked={config.antiDetection}
-                  onCheckedChange={(checked) => 
-                    setConfig(prev => ({ ...prev, antiDetection: !!checked }))
-                  }
-                />
-                <Label htmlFor="antiDetection">Anti-Detection</Label>
-              </div>
-
-              <div className="space-y-2">
-                <Label>Worker Threads: {config.workers}</Label>
-                <Slider
-                  value={[config.workers]}
-                  onValueChange={([value]) => 
-                    setConfig(prev => ({ ...prev, workers: value }))
-                  }
-                  max={8}
-                  min={1}
-                  step={1}
-                  className="w-full"
-                />
-              </div>
-
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="overwrite"
-                  checked={config.overwrite}
-                  onCheckedChange={(checked) => 
-                    setConfig(prev => ({ ...prev, overwrite: !!checked }))
-                  }
-                />
-                <Label htmlFor="overwrite">Overwrite Existing Results</Label>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Process Button */}
-          <Button 
-            onClick={handleProcess}
-            disabled={!domains.trim() || isProcessing}
-            className="w-full"
-            size="lg"
-          >
-            {isProcessing ? (
-              <>
-                <Activity className="w-4 h-4 mr-2 animate-spin" />
-                Processing...
-              </>
-            ) : (
-              <>
-                <Play className="w-4 h-4 mr-2" />
-                Start Classification
-              </>
-            )}
-          </Button>
-
-          {isProcessing && (
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span>Progress</span>
-                <span>{Math.round(progress)}%</span>
-              </div>
-              <Progress value={progress} className="w-full" />
-            </div>
-          )}
+      {/* Main Content Area with compact spacing */}
+      <div className="max-w-7xl mx-auto px-4 md:px-8 py-3">
+        {/* Compact Header */}
+        <div className="mb-4">
+          <h1 className="text-xl md:text-2xl font-semibold text-foreground mb-1">
+            Website Classifier
+          </h1>
         </div>
 
-        {/* Right Column - Results */}
-        <div className="lg:col-span-2 space-y-6">
-          {results.length > 0 && (
-            <>
-              {/* Statistics */}
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                <Card>
-                  <CardContent className="pt-6">
-                    <div className="text-2xl font-bold">{stats.total}</div>
-                    <p className="text-xs text-muted-foreground">Total</p>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardContent className="pt-6">
-                    <div className="text-2xl font-bold text-blue-600">{stats.marketing}</div>
-                    <p className="text-xs text-muted-foreground">Marketing</p>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardContent className="pt-6">
-                    <div className="text-2xl font-bold text-green-600">{stats.portal}</div>
-                    <p className="text-xs text-muted-foreground">Portal</p>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardContent className="pt-6">
-                    <div className="text-2xl font-bold text-gray-600">{stats.other}</div>
-                    <p className="text-xs text-muted-foreground">Other</p>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardContent className="pt-6">
-                    <div className="text-2xl font-bold text-red-600">{stats.errors}</div>
-                    <p className="text-xs text-muted-foreground">Errors</p>
-                  </CardContent>
-                </Card>
+        {/* Main Grid Layout: Fixed height to prevent scrolling */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-6 h-[calc(100vh-10rem)]">
+          {/* Input Section - Compact spacing */}
+          <div className="lg:col-span-3 flex flex-col space-y-3 order-2 lg:order-1">
+            
+            {/* Domain Input Section */}
+            <div className="space-y-2">
+              <div className="space-y-1">
+                <Label htmlFor="domains" className="text-sm font-medium text-foreground">
+                  Domains
+                </Label>
+                <p className="text-xs text-neutral-500">
+                  Enter one domain per line
+                </p>
               </div>
+              <Textarea
+                id="domains"
+                placeholder="example.com&#10;google.com&#10;openai.com"
+                value={domains}
+                onChange={(e) => setDomains(e.target.value)}
+                className="min-h-[70px] font-mono text-sm resize-none border-border/50 focus:border-accent focus:ring-1 focus:ring-accent rounded-md transition-colors hover:border-border"
+              />
+              {domains && (
+                <p className="text-xs text-neutral-500 ml-0">
+                  {parseDomains(domains).length} domain{parseDomains(domains).length !== 1 ? 's' : ''} {results.length > 0 ? 'configured' : 'ready to process'}
+                </p>
+              )}
+            </div>
 
-              {/* Results Table */}
-              <Card>
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="flex items-center gap-2">
-                      <BarChart3 className="w-5 h-5" />
-                      Results
-                    </CardTitle>
-                    <div className="flex items-center gap-2">
-                      <div className="relative">
-                        <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                        <Input
-                          placeholder="Search domains..."
-                          value={searchTerm}
-                          onChange={(e) => setSearchTerm(e.target.value)}
-                          className="pl-8 w-64"
-                        />
-                      </div>
-                      <Button onClick={handleExport} variant="outline" size="sm">
-                        <Download className="w-4 h-4 mr-2" />
-                        Export CSV
-                      </Button>
+            {/* Collapsible Configuration Section */}
+            <div className="space-y-2">
+              <Button
+                variant="outline"
+                onClick={() => setShowConfig(!showConfig)}
+                className="w-full justify-between h-8 px-3 text-xs border-border/50 hover:bg-secondary/60 hover:border-border transition-colors rounded-md"
+              >
+                <div className="flex items-center space-x-2">
+                  <Settings className="w-3 h-3" />
+                  <span>Configuration</span>
+                  <span className="text-muted-foreground">({config.method}, {config.workers} workers)</span>
+                </div>
+                {showConfig ? (
+                  <ChevronUp className="w-3 h-3" />
+                ) : (
+                  <ChevronDown className="w-3 h-3" />
+                )}
+              </Button>
+              
+              {showConfig && (
+                <div className="space-y-2 p-3 bg-muted/40 rounded-md border border-border/40">
+                  <div className="space-y-1">
+                    <Label className="text-xs font-medium text-foreground">Text Extraction Method</Label>
+                    <Select
+                      value={config.method} 
+                      onValueChange={(value: "HTML" | "OCR") => 
+                        setConfig(prev => ({ ...prev, method: value }))
+                      }
+                    >
+                      <SelectTrigger className="h-7 text-xs border-border/50 focus:border-accent focus:ring-1 focus:ring-accent hover:border-border transition-colors rounded-md">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="HTML">HTML Parsing</SelectItem>
+                        <SelectItem value="OCR">OCR (Screenshots)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="headless"
+                        checked={config.headless}
+                        onCheckedChange={(checked) => 
+                          setConfig(prev => ({ ...prev, headless: !!checked }))
+                        }
+                        className="border-border/50 data-[state=checked]:bg-accent data-[state=checked]:border-accent rounded-sm transition-colors hover:border-border"
+                      />
+                      <Label htmlFor="headless" className="text-xs text-foreground cursor-pointer">
+                        Headless Mode
+                      </Label>
+                    </div>
+
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="antiDetection"
+                        checked={config.antiDetection}
+                        onCheckedChange={(checked) => 
+                          setConfig(prev => ({ ...prev, antiDetection: !!checked }))
+                        }
+                        className="border-border/50 data-[state=checked]:bg-accent data-[state=checked]:border-accent rounded-sm transition-colors hover:border-border"
+                      />
+                      <Label htmlFor="antiDetection" className="text-xs text-foreground cursor-pointer">
+                        Anti-Detection
+                      </Label>
+                    </div>
+
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="overwrite"
+                        checked={config.overwrite}
+                        onCheckedChange={(checked) => 
+                          setConfig(prev => ({ ...prev, overwrite: !!checked }))
+                        }
+                        className="border-border/50 data-[state=checked]:bg-accent data-[state=checked]:border-accent rounded-sm transition-colors hover:border-border"
+                      />
+                      <Label htmlFor="overwrite" className="text-xs text-foreground cursor-pointer">
+                        Overwrite Existing Results
+                      </Label>
                     </div>
                   </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="rounded-md border">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Domain</TableHead>
-                          <TableHead>Classification</TableHead>
-                          <TableHead>Summary</TableHead>
-                          <TableHead>Confidence</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {filteredResults.map((result) => (
-                          <TableRow key={result.domain}>
-                            <TableCell className="font-medium">
-                              {result.domain}
-                            </TableCell>
-                            <TableCell>
-                              <Badge 
-                                variant={
-                                  result.classification_label === "Marketing" ? "default" :
-                                  result.classification_label === "Portal" ? "secondary" :
-                                  result.classification_label === "Error" ? "destructive" :
-                                  "outline"
-                                }
-                              >
-                                {result.classification_label}
-                              </Badge>
-                            </TableCell>
-                            <TableCell className="max-w-xs truncate">
-                              {result.summary}
-                            </TableCell>
-                            <TableCell>
-                              {(result.confidence_level * 100).toFixed(1)}%
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
-                </CardContent>
-              </Card>
-            </>
-          )}
 
-          {results.length === 0 && !isProcessing && (
-            <Card>
-              <CardContent className="pt-6">
-                <div className="text-center text-muted-foreground">
-                  <FileText className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                  <p>No results yet. Enter domains and start classification to see results here.</p>
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-xs font-medium text-foreground">Worker Threads</Label>
+                      <span className="text-xs font-mono text-foreground bg-muted px-1.5 py-0.5 rounded">{config.workers}</span>
+                    </div>
+                    <Slider
+                      value={[config.workers]}
+                      onValueChange={([value]) => 
+                        setConfig(prev => ({ ...prev, workers: value }))
+                      }
+                      max={8}
+                      min={1}
+                      step={1}
+                      className="w-full slider-enhanced"
+                    />
+                  </div>
                 </div>
-              </CardContent>
-            </Card>
-          )}
+              )}
+            </div>
+
+            {/* Action Button - Compact */}
+            <div className="mt-auto">
+              <Button 
+                onClick={handleProcess}
+                disabled={!domains.trim() || isProcessing}
+                className="w-full max-w-xs mx-auto bg-green-600 hover:bg-green-700 text-white font-medium transition-all duration-200 hover:scale-[1.02] disabled:hover:scale-100 rounded-md"
+                size="default"
+              >
+                {isProcessing ? (
+                  <>
+                    <Activity className="w-4 h-4 mr-2 animate-spin" />
+                    Processing...
+                  </>
+                ) : results.length > 0 ? (
+                  <>
+                    <Activity className="w-4 h-4 mr-2" />
+                    Re-classify Domains
+                  </>
+                ) : (
+                  <>
+                    <Play className="w-4 h-4 mr-2" />
+                    Start Classification
+                  </>
+                )}
+              </Button>
+
+              {isProcessing && (
+                <div className="mt-2 space-y-1">
+                  <div className="flex justify-between text-xs">
+                    <span className="text-neutral-500">Progress</span>
+                    <span className="text-foreground font-mono">{Math.round(progress)}%</span>
+                  </div>
+                  <Progress value={progress} className="w-full h-1.5" />
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Results Section - Compact design */}
+          <div className="lg:col-span-9 flex flex-col min-h-0 order-1 lg:order-2">
+            <div className="bg-muted/20 rounded-lg border border-border/30 p-1 h-full flex flex-col">
+              {isProcessing ? (
+                /* Loading State with Skeleton */
+                <div className="flex flex-col h-full space-y-3 p-3">
+                  <div className="space-y-3">
+                    <h3 className="text-sm font-semibold text-foreground">Processing...</h3>
+                    <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+                      {['total', 'marketing', 'portal', 'other', 'errors'].map((stat) => (
+                        <div key={stat} className="bg-[#1a1a1a] p-4 rounded-md border border-border/40">
+                          <div className="h-8 bg-muted/50 rounded skeleton mb-2"></div>
+                          <div className="h-3 bg-muted/30 rounded skeleton w-16"></div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="flex flex-col flex-1 min-h-0 space-y-3">
+                    <div className="flex items-center justify-between py-2 border-b border-border/20">
+                      <h3 className="text-sm font-semibold text-foreground">Processing Domains...</h3>
+                    </div>
+                    <div className="flex-1 border border-border/40 rounded-md overflow-hidden bg-background min-h-0 p-4">
+                      <div className="space-y-3">
+                        {parseDomains(domains).slice(0, 6).map((domain) => (
+                          <div key={domain} className="flex items-center space-x-4">
+                            <div className="h-4 bg-muted/50 rounded skeleton w-32"></div>
+                            <div className="h-6 bg-muted/50 rounded skeleton w-20"></div>
+                            <div className="h-4 bg-muted/30 rounded skeleton flex-1"></div>
+                            <div className="h-4 bg-muted/30 rounded skeleton w-12"></div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ) : results.length > 0 ? (
+                <div className="flex flex-col h-full space-y-2 p-3 results-section">
+                  {/* Enhanced Statistics Summary */}
+                  <div className="space-y-3">
+                    <h3 className="text-sm font-semibold text-foreground">Summary</h3>
+                    <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
+                      <div className="bg-[#1a1a1a] p-4 rounded-md border border-border/40 hover:bg-[#1e1e1e] transition-colors">
+                        <div className="text-2xl font-bold text-foreground">{stats.total}</div>
+                        <p className="text-xs text-muted-foreground">Total</p>
+                      </div>
+                      <div className="bg-[#1a1a1a] p-4 rounded-md border border-border/40 hover:bg-[#1e1e1e] transition-colors">
+                        <div className="text-2xl font-bold text-accent">{stats.marketing}</div>
+                        <p className="text-xs text-muted-foreground">Marketing</p>
+                      </div>
+                      <div className="bg-[#1a1a1a] p-4 rounded-md border border-border/40 hover:bg-[#1e1e1e] transition-colors">
+                        <div className="text-2xl font-bold text-accent">{stats.portal}</div>
+                        <p className="text-xs text-muted-foreground">Portal</p>
+                      </div>
+                      <div className="bg-[#1a1a1a] p-4 rounded-md border border-border/40 hover:bg-[#1e1e1e] transition-colors">
+                        <div className={`text-2xl font-bold ${stats.other > 0 ? 'text-foreground' : 'text-muted-foreground'}`}>{stats.other}</div>
+                        <p className="text-xs text-muted-foreground">Other</p>
+                      </div>
+                      <div className="bg-[#1a1a1a] p-4 rounded-md border border-border/40 hover:bg-[#1e1e1e] transition-colors">
+                        <div className={`text-2xl font-bold ${stats.errors > 0 ? 'text-red-500' : 'text-muted-foreground'}`}>{stats.errors}</div>
+                        <p className="text-xs text-muted-foreground">Errors</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Enhanced Results Table */}
+                  <div className="flex flex-col flex-1 min-h-0 space-y-3">
+                    {/* Enhanced Search & Export Header */}
+                    <div className="flex items-center justify-between py-2 border-b border-border/20">
+                      <h3 className="text-sm font-semibold text-foreground">Detailed Results</h3>
+                      <div className="flex items-center gap-3">
+                        <div className="relative">
+                          <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                          <Input
+                            placeholder="Search domains..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="pl-8 w-48 h-8 text-sm border-border/50 focus:border-accent focus:ring-1 focus:ring-accent bg-background rounded-md transition-colors hover:border-border"
+                          />
+                        </div>
+                        <Button 
+                          onClick={handleExport} 
+                          variant="outline" 
+                          size="sm"
+                          className="h-8 text-sm px-3 border-border/50 hover:bg-secondary/80 text-muted-foreground hover:text-foreground transition-colors rounded-md"
+                        >
+                          <Download className="w-3.5 h-3.5 mr-1.5" />
+                          Export CSV
+                        </Button>
+                      </div>
+                    </div>
+
+                    <div className="flex-1 border border-border/40 rounded-md overflow-hidden bg-background min-h-0">
+                      <div className="h-full overflow-auto">
+                        <Table>
+                          <TableHeader>
+                            <TableRow className="border-border/40 bg-muted/30 hover:bg-muted/30">
+                              <TableHead className="text-xs font-medium text-foreground h-7">Domain</TableHead>
+                              <TableHead className="text-xs font-medium text-foreground h-7">Classification</TableHead>
+                              <TableHead className="text-xs font-medium text-foreground h-7">Summary</TableHead>
+                              <TableHead className="text-xs font-medium text-foreground h-7 text-right">Confidence</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {filteredResults.map((result, index) => (
+                              <TableRow 
+                                key={result.domain} 
+                                className="border-border/40 hover:bg-muted/20 transition-colors"
+                              >
+                                <TableCell className="font-mono text-xs text-foreground py-1.5">
+                                  {result.domain}
+                                </TableCell>
+                                <TableCell className="py-1.5">
+                                  <Badge 
+                                    variant={
+                                      result.classification_label === "Marketing" ? "default" :
+                                      result.classification_label === "Portal" ? "secondary" :
+                                      result.classification_label === "Error" ? "destructive" :
+                                      "outline"
+                                    }
+                                    className="text-xs rounded-md"
+                                  >
+                                    {result.classification_label}
+                                  </Badge>
+                                </TableCell>
+                                <TableCell className="text-xs text-neutral-600 py-1.5 max-w-xs">
+                                  <div className="truncate">
+                                    {result.summary}
+                                  </div>
+                                </TableCell>
+                                <TableCell className="text-xs font-mono text-foreground py-1.5 text-right">
+                                  {(result.confidence_level * 100).toFixed(1)}%
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                /* Enhanced Empty State */
+                <div className="flex items-center justify-center h-full">
+                  <div className="text-center space-y-4 max-w-md">
+                    <div className="space-y-2">
+                      <div className="mx-auto w-16 h-16 bg-muted/50 rounded-full flex items-center justify-center">
+                        <FileText className="w-8 h-8 text-muted-foreground" />
+                      </div>
+                      <p className="text-lg font-medium text-foreground">No results yet</p>
+                      <p className="text-sm text-muted-foreground leading-relaxed">
+                        Add domains and start classification to see detailed results.
+                      </p>
+                    </div>
+                    {domains.trim() && (
+                      <div className="text-xs text-muted-foreground bg-muted/30 px-3 py-2 rounded-md">
+                        Ready to process {parseDomains(domains).length} domain{parseDomains(domains).length !== 1 ? 's' : ''}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       </div>
+      
+      <Toaster />
     </div>
   );
 }

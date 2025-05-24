@@ -41,20 +41,41 @@ export default {
   				foreground: 'hsl(var(--destructive-foreground))'
   			},
   			border: 'hsl(var(--border))',
-  			input: 'hsl(var(--input))',
-  			ring: 'hsl(var(--ring))',
-  			chart: {
-  				'1': 'hsl(var(--chart-1))',
-  				'2': 'hsl(var(--chart-2))',
-  				'3': 'hsl(var(--chart-3))',
-  				'4': 'hsl(var(--chart-4))',
-  				'5': 'hsl(var(--chart-5))'
-  			}
+  			input: 'hsl(var(--input))',			ring: 'hsl(var(--ring))',
+			chart: {
+				'1': 'hsl(var(--chart-1))',
+				'2': 'hsl(var(--chart-2))',
+				'3': 'hsl(var(--chart-3))',
+				'4': 'hsl(var(--chart-4))',
+				'5': 'hsl(var(--chart-5))'
+			},
+			neutral: {
+				400: '#a1a1aa',
+				500: '#71717a',
+				600: '#52525b',
+			},
+			green: {
+				600: '#059669',
+				700: '#047857',
+			}
+		},
+  		spacing: {
+  			'xs': 'var(--spacing-xs)',
+  			'sm': 'var(--spacing-sm)',
+  			'md': 'var(--spacing-md)',
+  			'lg': 'var(--spacing-lg)',
+  			'xl': 'var(--spacing-xl)',
   		},
   		borderRadius: {
   			lg: 'var(--radius)',
   			md: 'calc(var(--radius) - 2px)',
   			sm: 'calc(var(--radius) - 4px)'
+  		},
+  		screens: {
+  			'xs': '475px',
+  		},
+  		minHeight: {
+  			'touch': '44px', // Mobile accessibility minimum
   		}
   	}
   },

@@ -56,7 +56,13 @@ export async function POST(request: NextRequest) {
     }
 
     const data = await backendResponse.json();
-    return NextResponse.json({ results: data.results });
+    return NextResponse.json({
+      results: data.results,
+      total_processed: data.total_processed,
+      skipped: data.skipped,
+      message: data.message,
+      batch_id: data.batch_id
+    });
 
   } catch (error) {
     console.error('API Error:', error);

@@ -57,7 +57,7 @@ echo "Activating virtual environment..."
 source venv/bin/activate
 
 echo "Installing Python dependencies..."
-pip install -q -r backend_requirements.txt
+pip install -q -r requirements.txt
 
 # Check if .env file exists
 if [ ! -f ".env" ]; then

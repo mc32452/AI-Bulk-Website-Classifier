@@ -99,8 +99,38 @@ def classify_domains():
         headless = config.get('headless', True)
         anti_detection = config.get('antiDetection', False)
         workers = config.get('workers', 4)
+        overwrite = config.get('overwrite', False)
         
         logger.info(f"Processing {len(domains)} domains with config: {config}")
+        
+        # Check database for existing results to avoid duplicates
+        domains_to_process = []
+        existing_results = []
+        
+        if db and not overwrite:
+            # Check which domains already exist in the database
+            for domain in domains:
+                existing = db.get_results(domain_filter=domain, limit=1)
+                if existing:
+                    logger.info(f"Skipping already processed domain: {domain}")
+                    existing_results.extend(existing)
+                else:
+                    domains_to_process.append(domain)
+        else:
+            # Process all domains if overwrite is enabled or no database
+            domains_to_process = domains
+        
+        if not domains_to_process:
+            logger.info("No new domains to process - all domains already exist in database")
+            return jsonify({
+                "results": existing_results,
+                "batch_id": None,
+                "total_processed": 0,
+                "skipped": len(domains),
+                "message": "All domains already processed. Use overwrite option to reprocess."
+            })
+        
+        logger.info(f"Processing {len(domains_to_process)} new domains (skipping {len(domains) - len(domains_to_process)} existing)")
         
         # Generate batch ID
         batch_id = f"batch_{datetime.now().strftime('%Y%m%d_%H%M%S_%f')}"
@@ -109,7 +139,7 @@ def classify_domains():
         if process_domain is None:
             # Use mock processing if the main pipeline is not available
             results = []
-            for i, domain in enumerate(domains):
+            for i, domain in enumerate(domains_to_process):
                 results.append({
                     "domain": domain,
                     "classification_label": ["Marketing", "Portal", "Other"][i % 3],
@@ -124,7 +154,7 @@ def classify_domains():
             with ThreadPoolExecutor(max_workers=workers) as executor:
                 future_to_domain = {
                     executor.submit(process_domain, domain, text_method, headless, anti_detection): domain
-                    for domain in domains
+                    for domain in domains_to_process
                 }
                 
                 for future in as_completed(future_to_domain):
@@ -154,11 +184,16 @@ def classify_domains():
                 logger.error(f"Error storing results in database: {e}")
                 # Continue without database storage
         
-        logger.info(f"Successfully processed {len(results)} domains")
+        # Combine new results with existing results
+        all_results = existing_results + results
+        
+        logger.info(f"Successfully processed {len(results)} new domains, total results: {len(all_results)}")
         return jsonify({
-            "results": results,
-            "batch_id": batch_id,
-            "total_processed": len(results)
+            "results": all_results,
+            "batch_id": batch_id if results else None,
+            "total_processed": len(results),
+            "skipped": len(domains) - len(domains_to_process),
+            "message": f"Processed {len(results)} new domains, skipped {len(domains) - len(domains_to_process)} existing domains"
         })
         
     except Exception as e:
