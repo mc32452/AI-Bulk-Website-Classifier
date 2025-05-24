@@ -65,3 +65,23 @@ pytest_cache/
 
 # Results files
 results_*.csv
+*.csv
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Screenshots and temporary files
+screenshots/
+temp/
+*.tmp
+*.bak
+*.old
+
+# Documentation exports
+*.pdf
+*.docx
+
+# Test outputs
+test_*

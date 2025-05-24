@@ -121,7 +121,7 @@ echo "  3. Toggle 'Use Mock Data' for testing without API calls"
 echo "  4. Click 'Start Classification' to begin"
 echo ""
 echo -e "${YELLOW}To stop the application:${NC}"
-echo "  Press Ctrl+C or run: pkill -f 'flask_backend.py' && pkill -f 'next dev'"
+echo "  Press Ctrl+C or run: pkill -f 'flask_backend_enhanced.py' && pkill -f 'next dev'"
 echo ""
 
 # Keep script running and handle Ctrl+C
@@ -134,7 +134,7 @@ cleanup() {
     if [ ! -z "$FRONTEND_PID" ]; then
         kill $FRONTEND_PID 2>/dev/null || true
     fi
-    pkill -f 'flask_backend.py' 2>/dev/null || true
+    pkill -f 'flask_backend_enhanced.py' 2>/dev/null || true
     pkill -f 'next dev' 2>/dev/null || true
     echo -e "${GREEN}✅ Cleanup complete${NC}"
     exit 0

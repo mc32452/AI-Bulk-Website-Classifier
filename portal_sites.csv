@@ -1,4 +1,0 @@
-domain,classification_label,summary,confidence_level,snippet,processed_at
-stackoverflow.com,Portal,"Stack Overflow is a question-and-answer website for programmers to ask questions, share knowledge, and find solutions related to programming and software development.",0.95,,2025-05-24 17:34:00
-github.com,Portal,"GitHub is a collaborative platform for software development, offering tools like code hosting, version control, CI/CD workflows, AI-powered coding assistance, and developer collaboration features.",0.95,,2025-05-24 17:34:00
-portal.company.com,Portal,Employee portal system,0.92,Login to access your account...,2025-05-24 17:32:43
