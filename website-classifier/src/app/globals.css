@@ -235,6 +235,60 @@
   .animate-bounce-in {
     animation: bounce-in 0.6s ease-out;
   }
+  
+  /* Layout transition animations */
+  @keyframes slide-in-from-top {
+    0% {
+      transform: translateY(-10px);
+      opacity: 0;
+    }
+    100% {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+  
+  @keyframes slide-in-from-left {
+    0% {
+      transform: translateX(-20px);
+      opacity: 0;
+    }
+    100% {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+  
+  @keyframes slide-in-from-right {
+    0% {
+      transform: translateX(20px);
+      opacity: 0;
+    }
+    100% {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+  
+  .animate-in {
+    animation-fill-mode: both;
+  }
+  
+  .slide-in-from-top-4 {
+    animation: slide-in-from-top 0.7s ease-out;
+  }
+  
+  .slide-in-from-left-4 {
+    animation: slide-in-from-left 0.7s ease-out 0.1s;
+  }
+  
+  .slide-in-from-right-4 {
+    animation: slide-in-from-right 0.7s ease-out 0.1s;
+  }
+  
+  .slide-in-from-top-1 {
+    animation: slide-in-from-top 0.3s ease-out;
+  }
 }
 
 @layer components {
