@@ -735,16 +735,6 @@ export function WebsiteClassifier() {
         <div className={`max-w-7xl mx-auto px-4 md:px-8 py-3 transition-all duration-700 ease-in-out ${
           uiMode === 'processing' ? 'animate-in slide-in-from-top-4' : ''
         }`}>
-          {/* Compact Header */}
-          <div className="mb-4">
-            <h1 className="text-xl md:text-2xl font-semibold text-foreground mb-1">
-              Bulk Domain Analyzer
-            </h1>
-            <p className="text-sm text-muted-foreground">
-              Enter a list of domains to classify and analyze their content.
-            </p>
-          </div>
-
           {/* Animated Grid Layout */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-6 h-[calc(100vh-10rem)]">
             {/* Input Section - Slides in from left */}
