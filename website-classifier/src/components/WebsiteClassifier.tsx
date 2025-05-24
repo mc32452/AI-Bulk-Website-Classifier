@@ -11,6 +11,7 @@ import { Slider } from "@/components/ui/slider";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Toaster } from "@/components/ui/toaster";
 import { useToast } from "@/hooks/use-toast";
 import { 
@@ -27,7 +28,11 @@ import {
   TrendingUp,
   Globe,
   AlertCircle,
-  HelpCircle
+  HelpCircle,
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown,
+  Eye
 } from "lucide-react";
 import { useTheme } from "next-themes";
 
@@ -99,6 +104,19 @@ export function WebsiteClassifier() {
     backend: false,
     lastChecked: null,
   });
+  
+  // Add sorting state
+  const [sortConfig, setSortConfig] = useState<{
+    key: keyof ClassificationResult | null;
+    direction: 'asc' | 'desc';
+  }>({ key: null, direction: 'asc' });
+  
+  // Add popup state
+  const [selectedSummary, setSelectedSummary] = useState<{
+    domain: string;
+    summary: string;
+    classification: string;
+  } | null>(null);
 
   const { toast } = useToast();
 
@@ -134,7 +152,7 @@ export function WebsiteClassifier() {
     if (results.length > 0 && showConfig) {
       setShowConfig(false);
     }
-  }, [results.length, showConfig]);
+  }, [results.length]); // Remove showConfig from dependency array
 
   const parseDomains = (text: string): string[] => {
     return text.trim().split('\n').filter(line => line.trim()).map(line => line.trim());
@@ -246,6 +264,47 @@ export function WebsiteClassifier() {
   const filteredResults = results.filter(result => 
     result.domain.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  // Add sorting function
+  const handleSort = (key: keyof ClassificationResult) => {
+    let direction: 'asc' | 'desc' = 'asc';
+    if (sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
+    setSortConfig({ key, direction });
+  };
+
+  // Sort filtered results
+  const sortedResults = React.useMemo(() => {
+    if (!sortConfig.key) return filteredResults;
+    
+    return [...filteredResults].sort((a, b) => {
+      const aValue = a[sortConfig.key as keyof ClassificationResult];
+      const bValue = b[sortConfig.key as keyof ClassificationResult];
+      
+      if (typeof aValue === 'string' && typeof bValue === 'string') {
+        const comparison = aValue.localeCompare(bValue);
+        return sortConfig.direction === 'asc' ? comparison : -comparison;
+      }
+      
+      if (typeof aValue === 'number' && typeof bValue === 'number') {
+        const comparison = aValue - bValue;
+        return sortConfig.direction === 'asc' ? comparison : -comparison;
+      }
+      
+      return 0;
+    });
+  }, [filteredResults, sortConfig]);
+
+  // Get sort icon for column headers
+  const getSortIcon = (columnKey: keyof ClassificationResult) => {
+    if (sortConfig.key !== columnKey) {
+      return <ArrowUpDown className="w-3 h-3 ml-1" />;
+    }
+    return sortConfig.direction === 'asc' ? 
+      <ArrowUp className="w-3 h-3 ml-1" /> : 
+      <ArrowDown className="w-3 h-3 ml-1" />;
+  };
 
   const stats = {
     total: results.length,
@@ -547,14 +606,40 @@ export function WebsiteClassifier() {
                         <Table>
                           <TableHeader>
                             <TableRow className="border-border/40 bg-muted/30 hover:bg-muted/30">
-                              <TableHead className="text-xs font-medium text-foreground h-7">Domain</TableHead>
-                              <TableHead className="text-xs font-medium text-foreground h-7">Classification</TableHead>
-                              <TableHead className="text-xs font-medium text-foreground h-7">Summary</TableHead>
-                              <TableHead className="text-xs font-medium text-foreground h-7 text-right">Confidence</TableHead>
+                              <TableHead 
+                                className="text-xs font-medium text-foreground h-7 cursor-pointer hover:bg-muted/50 transition-colors"
+                                onClick={() => handleSort('domain')}
+                              >
+                                <div className="flex items-center">
+                                  Domain
+                                  {getSortIcon('domain')}
+                                </div>
+                              </TableHead>
+                              <TableHead 
+                                className="text-xs font-medium text-foreground h-7 cursor-pointer hover:bg-muted/50 transition-colors"
+                                onClick={() => handleSort('classification_label')}
+                              >
+                                <div className="flex items-center">
+                                  Classification
+                                  {getSortIcon('classification_label')}
+                                </div>
+                              </TableHead>
+                              <TableHead className="text-xs font-medium text-foreground h-7">
+                                Summary
+                              </TableHead>
+                              <TableHead 
+                                className="text-xs font-medium text-foreground h-7 text-right cursor-pointer hover:bg-muted/50 transition-colors"
+                                onClick={() => handleSort('confidence_level')}
+                              >
+                                <div className="flex items-center justify-end">
+                                  Confidence
+                                  {getSortIcon('confidence_level')}
+                                </div>
+                              </TableHead>
                             </TableRow>
                           </TableHeader>
                           <TableBody>
-                            {filteredResults.map((result, index) => (
+                            {sortedResults.map((result, index) => (
                               <TableRow 
                                 key={result.domain} 
                                 className="border-border/40 hover:bg-muted/20 transition-colors"
@@ -576,8 +661,22 @@ export function WebsiteClassifier() {
                                   </Badge>
                                 </TableCell>
                                 <TableCell className="text-xs text-muted-foreground py-1.5 max-w-xs">
-                                  <div className="truncate">
-                                    {result.summary}
+                                  <div className="flex items-center space-x-2">
+                                    <div className="truncate flex-1">
+                                      {result.summary}
+                                    </div>
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      className="h-6 w-6 p-0 shrink-0 hover:bg-muted"
+                                      onClick={() => setSelectedSummary({
+                                        domain: result.domain,
+                                        summary: result.summary,
+                                        classification: result.classification_label
+                                      })}
+                                    >
+                                      <Eye className="h-3 w-3" />
+                                    </Button>
                                   </div>
                                 </TableCell>
                                 <TableCell className="text-xs font-mono text-foreground py-1.5 text-right">
@@ -616,6 +715,31 @@ export function WebsiteClassifier() {
           </div>
         </div>
       </div>
+      
+      {/* Summary Dialog */}
+      <Dialog open={!!selectedSummary} onOpenChange={() => setSelectedSummary(null)}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center space-x-2">
+              <span>Summary for {selectedSummary?.domain}</span>
+              <Badge 
+                variant={
+                  selectedSummary?.classification === "Marketing" ? "outline" :
+                  selectedSummary?.classification === "Portal" ? "outline" :
+                  selectedSummary?.classification === "Error" ? "destructive" :
+                  "outline"
+                }
+                className="text-xs"
+              >
+                {selectedSummary?.classification}
+              </Badge>
+            </DialogTitle>
+            <DialogDescription className="text-left leading-relaxed whitespace-pre-wrap">
+              {selectedSummary?.summary}
+            </DialogDescription>
+          </DialogHeader>
+        </DialogContent>
+      </Dialog>
       
       <Toaster />
     </div>
