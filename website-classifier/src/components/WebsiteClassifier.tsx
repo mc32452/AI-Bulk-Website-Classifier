@@ -557,9 +557,9 @@ export function WebsiteClassifier() {
         <div className="max-w-7xl mx-auto px-4 md:px-8 py-1.5">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <div className={`w-1.5 h-1.5 rounded-full ${healthStatus.backend ? 'bg-accent' : 'bg-destructive'}`} />
+              <div className={`w-1.5 h-1.5 rounded-full ${healthStatus.backend ? 'bg-green-500' : 'bg-destructive'}`} />
               <span className="text-xs text-muted-foreground">
-                Backend: {healthStatus.backend ? 'Connected' : 'Disconnected'}
+                Backend: {healthStatus.backend ? 'Online' : 'Offline'}
               </span>
             </div>
             <ThemeToggle />
@@ -590,7 +590,7 @@ export function WebsiteClassifier() {
                   placeholder="example.com"
                   value={domains}
                   onChange={(e) => setDomains(e.target.value)}
-                  className="min-h-[200px] text-sm font-mono resize-none border-2 border-border/50 focus:border-accent focus:ring-2 focus:ring-accent rounded-lg transition-all duration-200 hover:border-border/80 bg-background p-4"
+                  className="min-h-[200px] text-sm font-mono resize-none border-2 border-border/50 hover:border-border/80 bg-background p-4 rounded-lg transition-all duration-200"
                 />
                 {/* Domain validation feedback */}
                 {domains && domainValidations.length > 0 && (

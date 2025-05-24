@@ -47,20 +47,20 @@
     --card-foreground: 0 0% 100%;
     --popover: 0 0% 10.2%;
     --popover-foreground: 0 0% 100%;
-    --primary: 158 64% 52%; /* Softer green #10b981 */
-    --primary-foreground: 0 0% 100%;
+    --primary: 0 0% 80%; /* Neutral light gray */
+    --primary-foreground: 0 0% 10%;
     --secondary: 0 0% 14.5%; /* Interactive elements #252525 */
     --secondary-foreground: 0 0% 100%;
     --muted: 0 0% 12.5%; /* Subtle backgrounds #202020 */
     --muted-foreground: 0 0% 62.7%; /* Secondary text #a0a0a0 */
-    --accent: 158 64% 52%; /* Softer green #10b981 */
+    --accent: 0 0% 25%; /* Neutral gray accent */
     --accent-foreground: 0 0% 100%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
     --border: 0 0% 14.5%; /* Minimal borders */
     --input: 0 0% 14.5%;
-    --ring: 158 64% 52%; /* Accent-colored focus outlines */
-    --chart-1: 158 64% 52%;
+    --ring: 0 0% 25%; /* Neutral gray focus outlines */
+    --chart-1: 0 0% 60%;
     --chart-2: 220 70% 50%;
     --chart-3: 280 65% 60%;
     --chart-4: 43 74% 66%;
