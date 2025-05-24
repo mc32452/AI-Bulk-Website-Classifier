@@ -87,7 +87,7 @@ function ThemeToggle() {
 }
 
 export function WebsiteClassifier() {
-  const [domains, setDomains] = useState("google.com\namazon.com\ngithub.com\nopenai.com\nstackoverflow.com");
+  const [domains, setDomains] = useState("");
   const [results, setResults] = useState<ClassificationResult[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -336,8 +336,11 @@ export function WebsiteClassifier() {
         {/* Compact Header */}
         <div className="mb-4">
           <h1 className="text-xl md:text-2xl font-semibold text-foreground mb-1">
-            Website Classifier
+            Bulk Domain Analyzer
           </h1>
+          <p className="text-sm text-muted-foreground">
+            Enter a list of domains to classify and analyze their content.
+          </p>
         </div>
 
         {/* Main Grid Layout: Fixed height to prevent scrolling */}
@@ -357,10 +360,10 @@ export function WebsiteClassifier() {
               </div>
               <Textarea
                 id="domains"
-                placeholder="example.com&#10;google.com&#10;openai.com"
+                placeholder="example.com"
                 value={domains}
                 onChange={(e) => setDomains(e.target.value)}
-                className="min-h-[70px] font-mono text-sm resize-none border-border/50 focus:border-accent focus:ring-1 focus:ring-accent rounded-md transition-colors hover:border-border"
+                className="min-h-[140px] font-mono text-sm resize-none border-border/50 focus:border-accent focus:ring-1 focus:ring-accent rounded-md transition-colors hover:border-border"
               />
               {domains && (
                 <p className="text-xs text-neutral-500 ml-0">
@@ -481,20 +484,11 @@ export function WebsiteClassifier() {
                 size="default"
               >
                 {isProcessing ? (
-                  <>
-                    <Activity className="w-4 h-4 mr-2 animate-spin" />
-                    Processing...
-                  </>
+                  <>Processing...</>
                 ) : results.length > 0 ? (
-                  <>
-                    <Activity className="w-4 h-4 mr-2" />
-                    Re-classify Domains
-                  </>
+                  <>New Scan</>
                 ) : (
-                  <>
-                    <Play className="w-4 h-4 mr-2" />
-                    Start Classification
-                  </>
+                  <>Start Scan</>
                 )}
               </Button>
             </div>
@@ -511,8 +505,8 @@ export function WebsiteClassifier() {
                     <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
                       {['total', 'marketing', 'portal', 'other', 'errors'].map((stat) => (
                         <div key={stat} className="bg-card p-4 rounded-md border border-border/40">
-                          <div className="h-8 bg-muted/50 rounded skeleton mb-2"></div>
-                          <div className="h-3 bg-muted/30 rounded skeleton w-16"></div>
+                          <div className="h-8 bg-muted/50 rounded skeleton mb-2" />
+                          <div className="h-3 bg-muted/30 rounded skeleton w-16" />
                         </div>
                       ))}
                     </div>
@@ -525,10 +519,10 @@ export function WebsiteClassifier() {
                       <div className="space-y-3">
                         {parseDomains(domains).slice(0, 6).map((domain) => (
                           <div key={domain} className="flex items-center space-x-4">
-                            <div className="h-4 bg-muted/50 rounded skeleton w-32"></div>
-                            <div className="h-6 bg-muted/50 rounded skeleton w-20"></div>
-                            <div className="h-4 bg-muted/30 rounded skeleton flex-1"></div>
-                            <div className="h-4 bg-muted/30 rounded skeleton w-12"></div>
+                            <div className="h-4 bg-muted/50 rounded skeleton w-32" />
+                            <div className="h-6 bg-muted/50 rounded skeleton w-20" />
+                            <div className="h-4 bg-muted/30 rounded skeleton flex-1" />
+                            <div className="h-4 bg-muted/30 rounded skeleton w-12" />
                           </div>
                         ))}
                       </div>

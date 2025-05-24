@@ -14,10 +14,10 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Bulk Website Classifier",
-  description: "AI-powered bulk website classification tool. Classify websites as Marketing, Portal, or Other using advanced text analysis and machine learning.",
-  keywords: ["website classification", "AI", "machine learning", "bulk analysis", "marketing", "portal"],
-  authors: [{ name: "Website Classifier Team" }],
+  title: "Bulk Domain Analyzer",
+  description: "AI-powered bulk domain analysis and classification tool. Analyze and classify websites quickly and efficiently.",
+  keywords: ["website classification", "domain analysis", "AI", "machine learning", "bulk analysis", "seo tools", "content analysis"],
+  authors: [{ name: "Bulk Domain Analyzer Team" }],
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: "white" },
     { media: "(prefers-color-scheme: dark)", color: "black" },
