@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Slider } from "@/components/ui/slider";
-import { Progress } from "@/components/ui/progress";
+
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
@@ -497,16 +497,6 @@ export function WebsiteClassifier() {
                   </>
                 )}
               </Button>
-
-              {isProcessing && (
-                <div className="mt-2 space-y-1">
-                  <div className="flex justify-between text-xs">
-                    <span className="text-neutral-500">Progress</span>
-                    <span className="text-foreground font-mono">{Math.round(progress)}%</span>
-                  </div>
-                  <Progress value={progress} className="w-full h-1.5" />
-                </div>
-              )}
             </div>
           </div>
 
