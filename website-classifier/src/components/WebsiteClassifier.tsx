@@ -57,6 +57,49 @@ interface HealthStatus {
   lastChecked: Date | null;
 }
 
+// Add interface for domain validation
+interface DomainValidation {
+  domain: string;
+  isValid: boolean;
+  error?: string;
+}
+
+// Add domain validation function
+const validateDomain = (domain: string): { isValid: boolean; error?: string } => {
+  const trimmedDomain = domain.trim();
+  
+  if (!trimmedDomain) {
+    return { isValid: false, error: "Empty domain" };
+  }
+
+  // Remove protocol if present
+  const cleanDomain = trimmedDomain.replace(/^https?:\/\//, '').replace(/^www\./, '');
+  
+  // Basic domain validation regex
+  const domainRegex = /^[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9]*\.([a-zA-Z]{2,}|[a-zA-Z]{2,}\.[a-zA-Z]{2,})$/;
+  
+  if (!domainRegex.test(cleanDomain)) {
+    return { isValid: false, error: "Invalid domain format" };
+  }
+
+  // Check for invalid characters
+  if (cleanDomain.includes('..') || cleanDomain.startsWith('-') || cleanDomain.endsWith('-')) {
+    return { isValid: false, error: "Invalid domain format" };
+  }
+
+  // Check minimum length
+  if (cleanDomain.length < 4) {
+    return { isValid: false, error: "Domain too short" };
+  }
+
+  // Check maximum length (253 chars for full domain)
+  if (cleanDomain.length > 253) {
+    return { isValid: false, error: "Domain too long" };
+  }
+
+  return { isValid: true };
+};
+
 // Add theme toggle component
 function ThemeToggle() {
   const { theme, setTheme } = useTheme();
@@ -104,6 +147,10 @@ export function WebsiteClassifier() {
     workers: 4,
     overwrite: false
   });
+  
+  // Add domain validation state
+  const [domainValidations, setDomainValidations] = useState<DomainValidation[]>([]);
+  
   const [healthStatus, setHealthStatus] = useState<HealthStatus>({
     backend: false,
     lastChecked: null,
@@ -153,22 +200,47 @@ export function WebsiteClassifier() {
 
   // Auto-collapse configuration when results are shown
   useEffect(() => {
-    if (results.length > 0 && showConfig) {
+    if (results.length > 0) {
       setShowConfig(false);
     }
-  }, [results.length, showConfig]);
+  }, [results.length]);
+
+  // Real-time domain validation
+  useEffect(() => {
+    if (!domains.trim()) {
+      setDomainValidations([]);
+      return;
+    }
+
+    const domainList = domains.trim().split('\n').filter(line => line.trim()).map(line => line.trim());
+    const validations = domainList.map(domain => {
+      const validation = validateDomain(domain);
+      return {
+        domain,
+        isValid: validation.isValid,
+        error: validation.error
+      };
+    });
+    
+    setDomainValidations(validations);
+  }, [domains]);
 
   const parseDomains = (text: string): string[] => {
     return text.trim().split('\n').filter(line => line.trim()).map(line => line.trim());
   };
 
+  // Get valid domains only for processing
+  const getValidDomains = (): string[] => {
+    return domainValidations.filter(v => v.isValid).map(v => v.domain);
+  };
+
   const handleProcess = async () => {
-    const domainList = parseDomains(domains);
+    const validDomains = getValidDomains();
     
-    if (domainList.length === 0) {
+    if (validDomains.length === 0) {
       toast({
-        title: "No domains provided",
-        description: "Please enter at least one domain to process.",
+        title: "No valid domains",
+        description: "Please enter at least one valid domain to process.",
         variant: "destructive"
       });
       return;
@@ -186,7 +258,7 @@ export function WebsiteClassifier() {
     }
 
     // Use streaming for real-time updates
-    await handleStreamingProcess(domainList);
+    await handleStreamingProcess(validDomains);
   };
 
   const handleStreamingProcess = async (domainList: string[]) => {
@@ -305,12 +377,12 @@ export function WebsiteClassifier() {
   };
 
   const handleProcessFallback = async () => {
-    const domainList = parseDomains(domains);
+    const validDomains = getValidDomains();
     
-    if (domainList.length === 0) {
+    if (validDomains.length === 0) {
       toast({
-        title: "No domains provided",
-        description: "Please enter at least one domain to process.",
+        title: "No valid domains",
+        description: "Please enter at least one valid domain to process.",
         variant: "destructive"
       });
       return;
@@ -339,7 +411,7 @@ export function WebsiteClassifier() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          domains: domainList,
+          domains: validDomains,
           config: {
             method: config.method,
             headless: config.headless,
@@ -374,7 +446,7 @@ export function WebsiteClassifier() {
       } else if (skipped > 0) {
         description = `${skipped} domain${skipped !== 1 ? 's' : ''} already in database`;
       } else {
-        description = `Successfully processed ${domainList.length} domain${domainList.length !== 1 ? 's' : ''}`;
+        description = `Successfully processed ${validDomains.length} domain${validDomains.length !== 1 ? 's' : ''}`;
       }
 
       toast({
@@ -512,10 +584,19 @@ export function WebsiteClassifier() {
                 onChange={(e) => setDomains(e.target.value)}
                 className="min-h-[140px] font-mono text-sm resize-none border-border/50 focus:border-accent focus:ring-1 focus:ring-accent rounded-md transition-colors hover:border-border"
               />
-              {domains && (
-                <p className="text-xs text-neutral-500 ml-0">
-                  {parseDomains(domains).length} domain{parseDomains(domains).length !== 1 ? 's' : ''} {results.length > 0 ? 'configured' : 'ready to process'}
-                </p>
+              
+              {/* Domain validation feedback */}
+              {domains && domainValidations.length > 0 && (
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-green-600 dark:text-green-400">
+                    ✓ {domainValidations.filter(v => v.isValid).length} valid
+                  </span>
+                  {domainValidations.filter(v => !v.isValid).length > 0 && (
+                    <span className="text-orange-600 dark:text-orange-400">
+                      ⚠ {domainValidations.filter(v => !v.isValid).length} invalid (will be skipped)
+                    </span>
+                  )}
+                </div>
               )}
             </div>
 
@@ -523,7 +604,7 @@ export function WebsiteClassifier() {
             <div className="space-y-2">
               <Button
                 variant="outline"
-                onClick={() => setShowConfig(!showConfig)}
+                onClick={() => setShowConfig(prev => !prev)}
                 className="w-full justify-between h-8 px-3 text-xs border-border/50 hover:bg-secondary/60 hover:border-border transition-colors rounded-md"
               >
                 <div className="flex items-center space-x-2">
@@ -626,16 +707,18 @@ export function WebsiteClassifier() {
             <div className="mt-auto">
               <Button 
                 onClick={handleProcess}
-                disabled={!domains.trim() || isProcessing}
+                disabled={!domains.trim() || isProcessing || getValidDomains().length === 0}
                 className="w-full max-w-xs mx-auto bg-green-600 hover:bg-green-700 text-white font-medium transition-all duration-200 hover:scale-[1.02] disabled:hover:scale-100 rounded-md"
                 size="default"
               >
                 {isProcessing ? (
                   <>Processing...</>
+                ) : getValidDomains().length === 0 && domains.trim() ? (
+                  <>No Valid Domains</>
                 ) : results.length > 0 ? (
-                  <>New Scan</>
+                  <>New Scan ({getValidDomains().length} domains)</>
                 ) : (
-                  <>Start Scan</>
+                  <>Start Scan ({getValidDomains().length} domains)</>
                 )}
               </Button>
             </div>
