@@ -721,7 +721,7 @@ export function WebsiteClassifier() {
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <Label htmlFor="headless-initial" className="text-sm text-foreground cursor-help font-medium">
-                          Headfull Mode
+                          Show Browser Window
                         </Label>
                       </TooltipTrigger>
                       <TooltipContent>
@@ -900,7 +900,7 @@ export function WebsiteClassifier() {
                           }
                         />
                         <Label htmlFor="headless" className="text-xs text-foreground cursor-pointer font-medium">
-                          Headfull Mode
+                          Show Browser Window
                         </Label>
                       </div>
 
