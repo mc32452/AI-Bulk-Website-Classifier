@@ -1,6 +1,23 @@
 # Bulk Website Classifier
 
+<video width="100%" controls>
+  <source src="./assets/demo_recording.mp4" type="video/mp4">
+  <p>Demo of Next.js UI - Your browser doesn't support HTML5 video. <a href="./assets/demo.mp4">Download the demo video</a> instead.</p>
+</video>
+
 A modern web application for classifying websites in bulk using AI-powered analysis. Features multiple interfaces including a Next.js web app, Streamlit interface, and CLI tool. Built with Flask backend and powered by OpenAI for intelligent website categorization.
+
+[![Next.js](https://img.shields.io/badge/Next.js-15-black?style=for-the-badge&logo=next.js&logoColor=white)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Python](https://img.shields.io/badge/Python-3.8+-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
+[![Flask](https://img.shields.io/badge/Flask-000000?style=for-the-badge&logo=flask&logoColor=white)](https://flask.palletsprojects.com/)
+[![OpenAI](https://img.shields.io/badge/OpenAI-412991?style=for-the-badge&logo=openai&logoColor=white)](https://openai.com/)
+[![Playwright](https://img.shields.io/badge/Playwright-2EAD33?style=for-the-badge&logo=playwright&logoColor=white)](https://playwright.dev/)
+
+[![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://reactjs.org/)
+[![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
+[![SQLite](https://img.shields.io/badge/SQLite-07405E?style=for-the-badge&logo=sqlite&logoColor=white)](https://www.sqlite.org/)
+[![Streamlit](https://img.shields.io/badge/Streamlit-FF4B4B?style=for-the-badge&logo=streamlit&logoColor=white)](https://streamlit.io/)
 
 ## Features
 
@@ -484,29 +501,6 @@ The SQLite database stores:
 - **Anti-Detection**: Attempt to use stealth techniques to avoid bot detection (use responsibly)
 - **Overwrite Existing Results**: If checked, re-processes and overwrites data for domains already in the database. Otherwise, skips them
 
-## Development
-
-### Adding New Features
-
-1. **Frontend Components**: Add new UI components in `website-classifier/src/components/`
-2. **API Routes**: Create new endpoints in `website-classifier/src/app/api/`
-3. **Backend Logic**: Extend functionality in `src/` modules
-4. **Styling**: Use Tailwind classes and shadcn/ui components
-5. **Types**: Define TypeScript interfaces for data structures
-
-### Testing
-
-```bash
-# Frontend development
-cd website-classifier
-npm run dev          # Run development server with hot reload
-npm run build        # Build for production
-npm start           # Start production server
-
-# Backend testing
-python -m pytest    # Run tests (if configured)
-```
-
 ## Troubleshooting
 
 ### Common Issues
@@ -523,6 +517,3 @@ python -m pytest    # Run tests (if configured)
 - Enable `--headful` only when necessary
 - Use database storage for large datasets
 
-## License
-
-MIT License - see LICENSE file for details.
