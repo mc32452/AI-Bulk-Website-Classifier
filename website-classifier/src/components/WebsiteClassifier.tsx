@@ -621,7 +621,7 @@ export function WebsiteClassifier() {
                 />
                 {/* Domain validation feedback */}
                 {domains && domainValidations.length > 0 && (
-                  <div className="absolute bottom-4 right-4 flex items-center space-x-4 text-sm bg-background/80 backdrop-blur-sm rounded-md px-3 py-2">
+                  <div className="absolute bottom-4 right-4 flex items-center space-x-4 text-sm px-3 py-2">
                     <span className="text-green-600 dark:text-green-400 font-medium">
                       ✓ {domainValidations.filter(v => v.isValid).length} valid domains
                     </span>
