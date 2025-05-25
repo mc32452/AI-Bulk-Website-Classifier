@@ -402,9 +402,11 @@ export function WebsiteClassifier() {
                       durationText = ` in ${formatScanDuration(duration)}`;
                     }
                     
+                    const errorText = errors === 1 ? "1 error" : `${errors} errors`;
+                    
                     toast({
                       title: `Scan complete${durationText}!`,
-                      description: errors > 0 ? `${message}, ${errors} errors` : message,
+                      description: errors > 0 ? `${message}, ${errorText}` : message,
                     });
                     break;
                   }
