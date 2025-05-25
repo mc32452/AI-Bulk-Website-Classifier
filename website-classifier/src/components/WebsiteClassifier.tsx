@@ -33,6 +33,7 @@ import {
   Database
 } from "lucide-react";
 import { useTheme } from "next-themes";
+import { FlickeringGrid } from "./magicui/flickering-grid";
 
 interface ClassificationResult {
   domain: string;
@@ -538,16 +539,35 @@ export function WebsiteClassifier() {
 
   return (
     <TooltipProvider delayDuration={300}>
-      <div className="min-h-screen bg-background">
-      {/* Simplified Status Bar */}
-      <div className="border-b border-border/40 bg-muted/30">
+      <div className="relative h-screen bg-background overflow-hidden">
+        {/* Flickering Grid Background - Covers entire viewport */}
+        {uiMode === 'initial' && (
+          <FlickeringGrid
+            className="absolute inset-0 z-0 [mask-image:radial-gradient(1000px_circle_at_center,transparent_350px,white_700px,white)]"
+            squareSize={4}
+            gridGap={6}
+            flickerChance={0.1}
+            color="#6B7280"
+            maxOpacity={0.3}
+          />
+        )}
+        
+        {/* Subtle Glassmorphism Overlay - Only for initial mode */}
+        {uiMode === 'initial' && (
+          <div className="absolute inset-0 z-5 bg-gradient-to-br from-white/1 via-transparent to-white/1" />
+        )}
+
+      {/* Simplified Status Bar - More Transparent */}
+      <div className="relative z-10 border-b border-border/20 bg-background/20 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-4 md:px-8 py-1.5">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <div className={`w-2.5 h-2.5 rounded-full ${healthStatus.backend ? 'bg-green-600' : 'bg-red-600'}`} />
-              <span className="text-xs text-muted-foreground">
-                Backend: {healthStatus.backend ? 'Online' : 'Offline'}
-              </span>
+              <div className="h-8 px-3 border border-border/40 rounded-md flex items-center space-x-2 bg-background/50">
+                <div className={`w-2.5 h-2.5 rounded-full ${healthStatus.backend ? 'bg-green-600' : 'bg-red-600'}`} />
+                <span className="text-xs text-muted-foreground/80">
+                  Backend: {healthStatus.backend ? 'Online' : 'Offline'}
+                </span>
+              </div>
             </div>
             <div className="flex items-center space-x-2">
               <Tooltip>
@@ -574,16 +594,18 @@ export function WebsiteClassifier() {
 
       {uiMode === 'initial' ? (
         /* Initial Centered Layout */
-        <div className="max-w-3xl mx-auto px-4 md:px-8 py-6">
-          {/* Centered Header */}
-          <div className="mb-8 text-center">
-            <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-3">
-              Bulk Domain Analyzer
-            </h1>
-            <p className="text-base text-muted-foreground max-w-2xl mx-auto">
-              Enter a list of domains to classify and analyze their content using AI-powered analysis.
-            </p>
-          </div>
+        <div className="relative h-full w-full overflow-hidden">
+          {/* Content Overlay */}
+          <div className="relative z-10 max-w-3xl mx-auto px-4 md:px-8 py-6">
+            {/* Centered Header */}
+            <div className="mb-8 text-center">
+              <h1 className="text-3xl md:text-4xl font-bold text-foreground/90 mb-3">
+                Bulk Domain Analyzer
+              </h1>
+              <p className="text-base text-muted-foreground/80 max-w-2xl mx-auto">
+                Enter a list of domains to classify and analyze their content using AI-powered analysis.
+              </p>
+            </div>
 
           {/* Centered Input Section */}
           <div className="space-y-5">
@@ -595,7 +617,7 @@ export function WebsiteClassifier() {
                   placeholder="example.com"
                   value={domains}
                   onChange={(e) => setDomains(e.target.value)}
-                  className="min-h-[200px] text-sm font-mono resize-none border-2 border-border/50 focus:border-border focus:outline-none rounded-xl transition-all duration-200 hover:border-border/80 bg-background p-4 shadow-sm hover:shadow-md"
+                  className="min-h-[200px] text-sm font-mono resize-none border-2 border-border/30 focus:border-border/60 focus:outline-none rounded-xl transition-all duration-200 hover:border-border/50 bg-white/5 backdrop-blur-sm p-4 shadow-sm hover:shadow-md placeholder:text-muted-foreground/60"
                 />
                 {/* Domain validation feedback */}
                 {domains && domainValidations.length > 0 && (
@@ -666,7 +688,7 @@ export function WebsiteClassifier() {
                             <p>How many domains will be processed at the same time</p>
                           </TooltipContent>
                         </Tooltip>
-                        <span className="text-sm font-mono text-foreground bg-muted px-3 py-1.5 rounded-lg shadow-sm">{config.workers}</span>
+                        <span className="text-sm font-mono text-foreground bg-muted px-1.5 py-0.5 rounded">{config.workers}</span>
                       </div>
                       <Slider
                         value={[config.workers]}
@@ -772,6 +794,7 @@ export function WebsiteClassifier() {
                 )}
               </Button>
             </div>
+          </div>
           </div>
         </div>
       ) : (
