@@ -132,7 +132,7 @@ function ThemeToggle() {
       variant="ghost"
       size="sm"
       onClick={() => setTheme(theme === "light" ? "dark" : "light")}
-      className="h-8 w-8 p-0 bg-background/85 hover:bg-secondary/60 border border-border/40 text-foreground hover:text-foreground"
+      className="h-8 w-8 p-0 bg-background/90 hover:bg-background/95 border border-border/40 backdrop-blur-sm text-foreground hover:text-foreground"
     >
       {theme === "light" ? (
         <Moon className="h-3 w-3" />
@@ -544,7 +544,7 @@ export function WebsiteClassifier() {
 
   return (
     <TooltipProvider delayDuration={300}>
-      <div className="relative h-screen bg-background overflow-hidden">
+      <div className="relative h-screen bg-background dark:bg-black overflow-hidden">
         {/* Flickering Grid Background - Covers entire viewport */}
         {uiMode === 'initial' && (
           <FlickeringGrid
@@ -563,11 +563,11 @@ export function WebsiteClassifier() {
         )}
 
       {/* Simplified Status Bar - Fully Transparent */}
-      <div className="relative z-10 bg-transparent border-transparent">
+      <div className="relative z-10">
         <div className="max-w-7xl mx-auto px-4 md:px-8 py-1.5">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <div className="h-8 px-3 border border-border/40 rounded-md flex items-center space-x-2 bg-background/85">
+              <div className="h-8 px-3 border border-border/40 rounded-md flex items-center space-x-2 bg-background/90 backdrop-blur-sm">
                 <div className={`w-2.5 h-2.5 rounded-full ${healthStatus.backend ? 'bg-green-600' : 'bg-red-600'}`} />
                 <span className="text-xs text-muted-foreground/80">
                   Backend: {healthStatus.backend ? 'Online' : 'Offline'}
@@ -581,7 +581,7 @@ export function WebsiteClassifier() {
                     variant="ghost"
                     size="sm"
                     onClick={handleExportDatabase}
-                    className="h-8 px-3 bg-background/85 hover:bg-secondary/60 border border-border/40 text-xs text-foreground hover:text-foreground"
+                    className="h-8 px-3 bg-background/90 hover:bg-background/95 border border-border/40 text-xs backdrop-blur-sm text-foreground hover:text-foreground"
                   >
                     <Database className="h-3 w-3 mr-0.2" />
                     Export DB
@@ -622,7 +622,7 @@ export function WebsiteClassifier() {
                   placeholder="example.com"
                   value={domains}
                   onChange={(e) => setDomains(e.target.value)}
-                  className="min-h-[200px] text-sm font-mono resize-none border-2 border-border/30 focus:border-border/60 focus:outline-none focus:ring-0 rounded-xl hover:border-border/50 bg-white/5 backdrop-blur-sm p-4 shadow-sm hover:shadow-md placeholder:text-muted-foreground/60"
+                  className="min-h-[200px] text-sm font-mono resize-none border-2 border-border/30 focus:border-border/60 focus:outline-none rounded-xl hover:border-border/50 bg-white/5 backdrop-blur-sm p-4 shadow-sm hover:shadow-md placeholder:text-muted-foreground/60"
                 />
                 {/* Domain validation feedback */}
                 {domains && domainValidations.length > 0 && (
@@ -817,7 +817,7 @@ export function WebsiteClassifier() {
         </div>
       ) : (
         /* Processing/Results Layout with Animation */
-        <div className="max-w-7xl mx-auto px-4 md:px-8 py-6 transition-all duration-700 ease-in-out animate-fade-scale-in">
+        <div className="max-w-7xl mx-auto px-4 md:px-8 py-3 transition-all duration-700 ease-in-out animate-fade-scale-in">
           {/* Animated Grid Layout */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-6 h-[calc(100vh-10rem)]">
             {/* Input Section - Fades in from left */}
@@ -838,7 +838,7 @@ export function WebsiteClassifier() {
                   placeholder="example.com"
                   value={domains}
                   onChange={(e) => setDomains(e.target.value)}
-                  className="min-h-[140px] font-mono text-sm resize-none border-border/50 focus:border-border focus:outline-none rounded-lg transition-colors hover:border-border shadow-sm"
+                  className="min-h-[140px] text-sm font-mono resize-none border-2 border-border/30 focus:border-border/60 focus:outline-none rounded-xl hover:border-border/50 bg-white/5 backdrop-blur-sm p-4 shadow-sm hover:shadow-md placeholder:text-muted-foreground/60"
                 />
                 
                 {/* Domain validation feedback */}
