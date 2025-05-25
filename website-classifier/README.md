@@ -6,10 +6,11 @@ A modern web application for classifying websites in bulk using AI-powered analy
 
 - **Bulk Domain Processing**: Classify multiple websites simultaneously
 - **AI-Powered Analysis**: Uses OpenAI GPT models for intelligent classification
+- **Streaming Processing & Real-time Updates**: Track processing status with live updates and see results as they come in
+- **Domain Validation**: Validates domain format before processing
 - **Flexible Configuration**: Choose between HTML and OCR analysis methods
-- **Real-time Progress**: Track processing status with live updates
 - **Results Management**: Filter, search, and export classification results
-- **Modern UI**: Built with shadcn/ui components for a polished user experience
+- **Modern UI**: Built with Next.js and shadcn/ui for a polished user experience
 
 ## Getting Started
 
@@ -35,25 +36,27 @@ A modern web application for classifying websites in bulk using AI-powered analy
 
 3. **Install backend dependencies**:
    ```bash
-   cd ..
-   pip install -r backend_requirements.txt
+   cd .. 
+   pip install -r requirements.txt 
    ```
 
 4. **Set up environment variables**:
    ```bash
-   # In the root directory, create or update .env
+   # In the root directory (bulk-web-describer), create or update .env
    echo "OPENAI_API_KEY=your_openai_api_key_here" > .env
    
    # In website-classifier directory, create .env.local
    cd website-classifier
-   echo "NEXT_PUBLIC_BACKEND_URL=http://localhost:5000" > .env.local
+   echo "NEXT_PUBLIC_BACKEND_URL=http://localhost:5001" > .env.local 
+   echo "NEXT_PUBLIC_API_BASE_URL=http://localhost:3000/api" >> .env.local
    ```
 
 ### Running the Application
 
 **Option 1: Use the startup script (recommended)**
+This script handles starting both the backend and frontend.
 ```bash
-# From the root directory
+# From the root directory (bulk-web-describer)
 chmod +x start.sh
 ./start.sh
 ```
@@ -61,9 +64,11 @@ chmod +x start.sh
 **Option 2: Manual startup**
 ```bash
 # Terminal 1: Start the Flask backend
-python flask_backend.py
+# Ensure you are in the root directory (bulk-web-describer)
+python flask_backend_enhanced.py
 
 # Terminal 2: Start the Next.js frontend
+# Ensure you are in the website-classifier directory
 cd website-classifier
 npm run dev
 ```
@@ -72,28 +77,39 @@ The application will be available at [http://localhost:3000](http://localhost:30
 
 ## Usage
 
-1. **Input Domains**: Enter website URLs in the textarea (one per line)
+1. **Input Domains**: Enter website URLs in the textarea (one per line). Invalid domains will be flagged.
 2. **Configure Settings**: 
-   - Choose analysis method (HTML or OCR)
-   - Set worker threads for parallel processing
-   - Enable/disable headless mode and anti-detection
-3. **Start Processing**: Click "Start Classification" to begin analysis
-4. **Monitor Progress**: Watch real-time progress and statistics
-5. **Review Results**: View classified websites in the results table
-6. **Export Data**: Download results as CSV for further analysis
+   - Choose text extraction method (HTML Parsing or OCR Screenshots).
+   - Set worker threads for parallel processing (1-8).
+   - Enable/disable headless mode for browser automation.
+   - Optionally enable anti-detection measures.
+   - Decide whether to overwrite existing results for previously scanned domains.
+3. **Start Analysis**: Click "Start Analysis" to begin.
+4. **Monitor Progress**: Observe real-time progress, including individual domain status and overall completion.
+5. **Review Results**: View classified websites in the sortable and searchable results table.
+6. **View Detailed Summary**: Click the eye icon to see a detailed summary for a specific domain.
+7. **Export Data**: Download results as a CSV file for further analysis.
 
 ## Configuration Options
 
 - **Analysis Method**: HTML parsing (faster) or OCR (more comprehensive)
-- **Worker Threads**: Number of parallel processing threads (1-10)
-- **Headless Mode**: Run browser automation in background
-- **Anti-Detection**: Use stealth techniques to avoid bot detection
-- **Overwrite Results**: Replace existing classifications or skip duplicates
+- **Worker Threads**: Number of parallel processing threads (1-8).
+- **Headless Mode**: Run browser automation in the background.
+- **Anti-Detection**: Attempt to use stealth techniques to avoid bot detection (use responsibly).
+- **Overwrite Existing Results**: If checked, re-processes and overwrites data for domains already in the database. Otherwise, skips them.
 
 ## API Endpoints
 
-- `POST /api/process`: Real-time website classification
-- `POST /api/process-mock`: Mock endpoint for testing (returns sample data)
+The application uses several API endpoints for its operations. Key endpoints include:
+
+- `POST /api/process-stream`: Initiates real-time website classification with streaming results.
+- `GET /api/health` (Backend): Checks the health of the Python backend (implicitly used by the frontend).
+- `GET /api/results`: Fetches stored classification results.
+- `GET /api/statistics`: Retrieves summary statistics.
+- `POST /api/export`: Handles exporting data (e.g., as CSV).
+- `GET /api/batches` (Potentially): May be used for managing batches of domains if this feature is further developed.
+
+Note: Some API routes like `/api/process` and `/api/process-mock` might still exist but `/api/process-stream` is the primary one for current functionality.
 
 ## Tech Stack
 
