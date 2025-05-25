@@ -153,7 +153,7 @@ export function WebsiteClassifier() {
   const [processedCount, setProcessedCount] = useState(0);
   const [totalCount, setTotalCount] = useState(0);
   const [streamingMode, setStreamingMode] = useState(false);
-  const [showConfig, setShowConfig] = useState(true); // Show config by default in initial state
+  const [showConfig, setShowConfig] = useState(false); // Configuration starts closed
   const [config, setConfig] = useState<ProcessingConfig>({
     method: "HTML",
     headless: true,
@@ -601,7 +601,7 @@ export function WebsiteClassifier() {
         /* Initial Centered Layout */
         <div className="relative h-full w-full overflow-hidden">
           {/* Content Overlay */}
-          <div className="relative z-10 max-w-3xl mx-auto px-4 md:px-8 py-6">
+          <div className="relative z-10 max-w-3xl mx-auto px-4 md:px-8 py-20">
             {/* Centered Header */}
             <div className="mb-8 text-center">
               <h1 className="text-3xl md:text-4xl font-bold text-foreground/90 mb-3">
@@ -614,6 +614,153 @@ export function WebsiteClassifier() {
 
           {/* Centered Input Section */}
           <div className="space-y-5">
+            {/* Configuration Section - Dropdown */}
+            <div className="max-w-2xl mx-auto">
+              <div className="bg-muted/40 rounded-xl border border-border/40 shadow-sm hover:shadow-md transition-all duration-300">
+                {/* Configuration Header - Always Visible */}
+                <Button
+                  variant="ghost"
+                  onClick={() => setShowConfig(prev => !prev)}
+                  className="w-full justify-between py-3 px-4 h-auto hover:bg-transparent rounded-xl"
+                >
+                  <span className="text-sm font-medium text-muted-foreground">Configuration</span>
+                  {showConfig ? (
+                    <ChevronUp className="w-4 h-4" />
+                  ) : (
+                    <ChevronDown className="w-4 h-4" />
+                  )}
+                </Button>
+                
+                {/* Configuration Content - Collapsible */}
+                {showConfig && (
+                  <div className="px-4 pb-4 space-y-4 animate-in slide-in-from-top-2 duration-300">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Label className="text-sm font-medium text-foreground cursor-help">Text Extraction Method</Label>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Choose how text is extracted from websites: HTML parsing is faster, OCR is more accurate for complex layouts</p>
+                          </TooltipContent>
+                        </Tooltip>
+                        <Select
+                          value={config.method} 
+                          onValueChange={(value: "HTML" | "OCR") => 
+                            setConfig(prev => ({ ...prev, method: value }))
+                          }
+                        >
+                          <SelectTrigger className="h-10 border-border/50 focus:border-border focus:outline-none hover:border-border transition-colors rounded-lg shadow-sm">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="HTML">HTML Parsing (Faster)</SelectItem>
+                            <SelectItem value="OCR">OCR Screenshots (More Accurate)</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Label className="text-sm font-medium text-foreground cursor-help">Worker Threads</Label>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Number of domains processed simultaneously - higher values are faster but use more resources</p>
+                          </TooltipContent>
+                        </Tooltip>
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <span className="text-sm text-muted-foreground cursor-help">Concurrent processing</span>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>How many domains will be processed at the same time</p>
+                              </TooltipContent>
+                            </Tooltip>
+                            <span className="text-sm font-mono text-foreground bg-muted px-1.5 py-0.5 rounded">{config.workers}</span>
+                          </div>
+                          <Slider
+                            value={[config.workers]}
+                            onValueChange={([value]) => 
+                              setConfig(prev => ({ ...prev, workers: value }))
+                            }
+                            max={8}
+                            min={1}
+                            step={1}
+                            className="w-full"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
+                      <div className="flex items-center space-x-3">
+                        <Checkbox
+                          id="headless-initial"
+                          checked={!config.headless}
+                          onCheckedChange={(checked) => 
+                            setConfig(prev => ({ ...prev, headless: !checked }))
+                          }
+                        />
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Label htmlFor="headless-initial" className="text-sm text-foreground cursor-help font-medium">
+                              Show Browser Window
+                            </Label>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Show browser window during analysis (useful for debugging and visual confirmation)</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </div>
+
+                      <div className="flex items-center space-x-3">
+                        <Checkbox
+                          id="antiDetection-initial"
+                          checked={config.antiDetection}
+                          onCheckedChange={(checked) => 
+                            setConfig(prev => ({ ...prev, antiDetection: !!checked }))
+                          }
+                        />
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Label htmlFor="antiDetection-initial" className="text-sm text-foreground cursor-help font-medium">
+                              Anti-Detection
+                            </Label>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Use techniques to avoid being detected as a bot by websites (slower but more reliable)</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </div>
+
+                      <div className="flex items-center space-x-3">
+                        <Checkbox
+                          id="overwrite-initial"
+                          checked={config.overwrite}
+                          onCheckedChange={(checked) => 
+                            setConfig(prev => ({ ...prev, overwrite: !!checked }))
+                          }
+                        />
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Label htmlFor="overwrite-initial" className="text-sm text-foreground cursor-help font-medium">
+                              Overwrite Existing
+                            </Label>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Re-analyze domains that have already been processed and replace previous results</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
             {/* Large Domain Input */}
             <div className="space-y-3">
               <div className="relative">
@@ -637,139 +784,6 @@ export function WebsiteClassifier() {
                     )}
                   </div>
                 )}
-              </div>
-            </div>
-
-            {/* Configuration Section - Always Visible */}
-            <div className="max-w-2xl mx-auto">
-              <div className="bg-muted/40 rounded-xl border border-border/40 p-6 space-y-4 shadow-sm hover:shadow-md transition-all duration-300">
-                <div>
-                  <h3 className="text-base font-semibold text-foreground mb-1">Configuration</h3>
-                  <p className="text-sm text-muted-foreground">Customize how your domains are analyzed</p>
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Label className="text-sm font-medium text-foreground cursor-help">Text Extraction Method</Label>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Choose how text is extracted from websites: HTML parsing is faster, OCR is more accurate for complex layouts</p>
-                      </TooltipContent>
-                    </Tooltip>
-                    <Select
-                      value={config.method} 
-                      onValueChange={(value: "HTML" | "OCR") => 
-                        setConfig(prev => ({ ...prev, method: value }))
-                      }
-                    >
-                      <SelectTrigger className="h-10 border-border/50 focus:border-border focus:outline-none hover:border-border transition-colors rounded-lg shadow-sm">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="HTML">HTML Parsing (Faster)</SelectItem>
-                        <SelectItem value="OCR">OCR Screenshots (More Accurate)</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Label className="text-sm font-medium text-foreground cursor-help">Worker Threads</Label>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Number of domains processed simultaneously - higher values are faster but use more resources</p>
-                      </TooltipContent>
-                    </Tooltip>
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <span className="text-sm text-muted-foreground cursor-help">Concurrent processing</span>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>How many domains will be processed at the same time</p>
-                          </TooltipContent>
-                        </Tooltip>
-                        <span className="text-sm font-mono text-foreground bg-muted px-1.5 py-0.5 rounded">{config.workers}</span>
-                      </div>
-                      <Slider
-                        value={[config.workers]}
-                        onValueChange={([value]) => 
-                          setConfig(prev => ({ ...prev, workers: value }))
-                        }
-                        max={8}
-                        min={1}
-                        step={1}
-                        className="w-full"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
-                  <div className="flex items-center space-x-3">
-                    <Checkbox
-                      id="headless-initial"
-                      checked={!config.headless}
-                      onCheckedChange={(checked) => 
-                        setConfig(prev => ({ ...prev, headless: !checked }))
-                      }
-                    />
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Label htmlFor="headless-initial" className="text-sm text-foreground cursor-help font-medium">
-                          Show Browser Window
-                        </Label>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Show browser window during analysis (useful for debugging and visual confirmation)</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </div>
-
-                  <div className="flex items-center space-x-3">
-                    <Checkbox
-                      id="antiDetection-initial"
-                      checked={config.antiDetection}
-                      onCheckedChange={(checked) => 
-                        setConfig(prev => ({ ...prev, antiDetection: !!checked }))
-                      }
-                    />
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Label htmlFor="antiDetection-initial" className="text-sm text-foreground cursor-help font-medium">
-                          Anti-Detection
-                        </Label>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Use techniques to avoid being detected as a bot by websites (slower but more reliable)</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </div>
-
-                  <div className="flex items-center space-x-3">
-                    <Checkbox
-                      id="overwrite-initial"
-                      checked={config.overwrite}
-                      onCheckedChange={(checked) => 
-                        setConfig(prev => ({ ...prev, overwrite: !!checked }))
-                      }
-                    />
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Label htmlFor="overwrite-initial" className="text-sm text-foreground cursor-help font-medium">
-                          Overwrite Existing
-                        </Label>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Re-analyze domains that have already been processed and replace previous results</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </div>
-                </div>
               </div>
             </div>
 
