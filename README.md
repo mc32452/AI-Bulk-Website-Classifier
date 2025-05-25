@@ -1,6 +1,6 @@
 # Bulk Website Classifier
 
-![Demo of Next.js UI](./assets/demo_recording.mp4)
+![Demo of Next.js UI](./assets/demo_recording.gif)
 
 A modern web application for classifying websites in bulk using AI-powered analysis. Features multiple interfaces including a Next.js web app, Streamlit interface, and CLI tool. Built with Flask backend and powered by OpenAI for intelligent website categorization.
 
