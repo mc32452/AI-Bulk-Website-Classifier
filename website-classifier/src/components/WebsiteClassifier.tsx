@@ -557,9 +557,9 @@ export function WebsiteClassifier() {
         <div className="max-w-7xl mx-auto px-4 md:px-8 py-1.5">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <div className={`w-1.5 h-1.5 rounded-full ${healthStatus.backend ? 'bg-green-500' : 'bg-destructive'}`} />
+              <div className={`w-1.5 h-1.5 rounded-full ${healthStatus.backend ? 'bg-accent' : 'bg-destructive'}`} />
               <span className="text-xs text-muted-foreground">
-                Backend: {healthStatus.backend ? 'Online' : 'Offline'}
+                Backend: {healthStatus.backend ? 'Connected' : 'Disconnected'}
               </span>
             </div>
             <ThemeToggle />
@@ -570,12 +570,12 @@ export function WebsiteClassifier() {
       {uiMode === 'initial' ? (
         /* Initial Centered Layout */
         <div className="max-w-3xl mx-auto px-4 md:px-8 py-6">
-          {/* Left-aligned Header */}
-          <div className="mb-6">
-            <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-2">
+          {/* Centered Header */}
+          <div className="mb-8 text-center">
+            <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-3">
               Bulk Domain Analyzer
             </h1>
-            <p className="text-base text-muted-foreground max-w-xl">
+            <p className="text-base text-muted-foreground max-w-2xl mx-auto">
               Enter a list of domains to classify and analyze their content using AI-powered analysis.
             </p>
           </div>
@@ -590,7 +590,7 @@ export function WebsiteClassifier() {
                   placeholder="example.com"
                   value={domains}
                   onChange={(e) => setDomains(e.target.value)}
-                  className="min-h-[200px] text-sm font-mono resize-none border-2 border-border/50 hover:border-border/80 bg-background p-4 rounded-lg transition-all duration-200"
+                  className="min-h-[200px] text-sm font-mono resize-none border-2 border-border/50 focus:border-border focus:outline-none rounded-xl transition-all duration-200 hover:border-border/80 bg-background p-4 shadow-sm hover:shadow-md"
                 />
                 {/* Domain validation feedback */}
                 {domains && domainValidations.length > 0 && (
@@ -610,7 +610,7 @@ export function WebsiteClassifier() {
 
             {/* Configuration Section - Always Visible */}
             <div className="max-w-2xl mx-auto">
-              <div className="bg-muted/40 rounded-lg border border-border/40 p-5 space-y-4">
+              <div className="bg-muted/40 rounded-xl border border-border/40 p-6 space-y-4 shadow-sm hover:shadow-md transition-all duration-300">
                 <div>
                   <h3 className="text-base font-semibold text-foreground mb-1">Configuration</h3>
                   <p className="text-sm text-muted-foreground">Customize how your domains are analyzed</p>
@@ -625,7 +625,7 @@ export function WebsiteClassifier() {
                         setConfig(prev => ({ ...prev, method: value }))
                       }
                     >
-                      <SelectTrigger className="h-10 border-border/50 focus:border-accent focus:ring-1 focus:ring-accent hover:border-border transition-colors rounded-md">
+                      <SelectTrigger className="h-10 border-border/50 focus:border-border focus:outline-none hover:border-border transition-colors rounded-lg shadow-sm">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -640,7 +640,7 @@ export function WebsiteClassifier() {
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
                         <span className="text-sm text-muted-foreground">Concurrent processing</span>
-                        <span className="text-sm font-mono text-foreground bg-muted px-2 py-1 rounded">{config.workers}</span>
+                        <span className="text-sm font-mono text-foreground bg-muted px-3 py-1.5 rounded-lg shadow-sm">{config.workers}</span>
                       </div>
                       <Slider
                         value={[config.workers]}
@@ -664,9 +664,8 @@ export function WebsiteClassifier() {
                       onCheckedChange={(checked) => 
                         setConfig(prev => ({ ...prev, headless: !!checked }))
                       }
-                      className="border-border/50 data-[state=checked]:bg-accent data-[state=checked]:border-accent rounded-sm transition-colors hover:border-border"
                     />
-                    <Label htmlFor="headless-initial" className="text-sm text-foreground cursor-pointer">
+                    <Label htmlFor="headless-initial" className="text-sm text-foreground cursor-pointer font-medium">
                       Headless Mode
                     </Label>
                   </div>
@@ -678,9 +677,8 @@ export function WebsiteClassifier() {
                       onCheckedChange={(checked) => 
                         setConfig(prev => ({ ...prev, antiDetection: !!checked }))
                       }
-                      className="border-border/50 data-[state=checked]:bg-accent data-[state=checked]:border-accent rounded-sm transition-colors hover:border-border"
                     />
-                    <Label htmlFor="antiDetection-initial" className="text-sm text-foreground cursor-pointer">
+                    <Label htmlFor="antiDetection-initial" className="text-sm text-foreground cursor-pointer font-medium">
                       Anti-Detection
                     </Label>
                   </div>
@@ -692,9 +690,8 @@ export function WebsiteClassifier() {
                       onCheckedChange={(checked) => 
                         setConfig(prev => ({ ...prev, overwrite: !!checked }))
                       }
-                      className="border-border/50 data-[state=checked]:bg-accent data-[state=checked]:border-accent rounded-sm transition-colors hover:border-border"
                     />
-                    <Label htmlFor="overwrite-initial" className="text-sm text-foreground cursor-pointer">
+                    <Label htmlFor="overwrite-initial" className="text-sm text-foreground cursor-pointer font-medium">
                       Overwrite Existing
                     </Label>
                   </div>
@@ -707,7 +704,7 @@ export function WebsiteClassifier() {
               <Button 
                 onClick={handleProcess}
                 disabled={!domains.trim() || isProcessing || getValidDomains().length === 0}
-                className="bg-green-600 hover:bg-green-700 text-white font-semibold text-base px-8 py-3 rounded-lg transition-all duration-200 hover:scale-[1.02] disabled:hover:scale-100 shadow-lg hover:shadow-xl"
+                className="bg-green-600 hover:bg-green-700 text-white font-semibold text-base px-8 py-3 rounded-xl transition-all duration-200 hover:scale-[1.02] disabled:hover:scale-100 shadow-lg hover:shadow-xl"
                 size="lg"
               >
                 {isProcessing ? (
@@ -735,6 +732,16 @@ export function WebsiteClassifier() {
         <div className={`max-w-7xl mx-auto px-4 md:px-8 py-3 transition-all duration-700 ease-in-out ${
           uiMode === 'processing' ? 'animate-in slide-in-from-top-4' : ''
         }`}>
+          {/* Compact Header */}
+          <div className="mb-4">
+            <h1 className="text-xl md:text-2xl font-semibold text-foreground mb-1">
+              Bulk Domain Analyzer
+            </h1>
+            <p className="text-sm text-muted-foreground">
+              Enter a list of domains to classify and analyze their content.
+            </p>
+          </div>
+
           {/* Animated Grid Layout */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-6 h-[calc(100vh-10rem)]">
             {/* Input Section - Slides in from left */}
@@ -757,7 +764,7 @@ export function WebsiteClassifier() {
                   placeholder="example.com"
                   value={domains}
                   onChange={(e) => setDomains(e.target.value)}
-                  className="min-h-[140px] font-mono text-sm resize-none border-border/50 focus:border-accent focus:ring-1 focus:ring-accent rounded-md transition-colors hover:border-border"
+                  className="min-h-[140px] font-mono text-sm resize-none border-border/50 focus:border-border focus:outline-none rounded-lg transition-colors hover:border-border shadow-sm"
                 />
                 
                 {/* Domain validation feedback */}
@@ -780,7 +787,7 @@ export function WebsiteClassifier() {
                 <Button
                   variant="outline"
                   onClick={() => setShowConfig(prev => !prev)}
-                  className="w-full justify-between h-8 px-3 text-xs border-border/50 hover:bg-secondary/60 hover:border-border transition-colors rounded-md"
+                  className="w-full justify-between h-8 px-3 text-xs border-border/50 hover:bg-secondary/60 hover:border-border transition-colors rounded-lg shadow-sm hover:shadow-md"
                 >
                   <div className="flex items-center space-x-2">
                     <Settings className="w-3 h-3" />
@@ -795,7 +802,7 @@ export function WebsiteClassifier() {
                 </Button>
                 
                 {showConfig && (
-                  <div className="space-y-2 p-3 bg-muted/40 rounded-md border border-border/40">
+                  <div className="space-y-2 p-3 bg-muted/40 rounded-lg border border-border/40 shadow-sm">
                     <div className="space-y-1">
                       <Label className="text-xs font-medium text-foreground">Text Extraction Method</Label>
                       <Select
@@ -804,7 +811,7 @@ export function WebsiteClassifier() {
                           setConfig(prev => ({ ...prev, method: value }))
                         }
                       >
-                        <SelectTrigger className="h-7 text-xs border-border/50 focus:border-accent focus:ring-1 focus:ring-accent hover:border-border transition-colors rounded-md">
+                        <SelectTrigger className="h-7 text-xs border-border/50 focus:border-border focus:outline-none hover:border-border transition-colors rounded-lg shadow-sm">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -822,9 +829,8 @@ export function WebsiteClassifier() {
                           onCheckedChange={(checked) => 
                             setConfig(prev => ({ ...prev, headless: !!checked }))
                           }
-                          className="border-border/50 data-[state=checked]:bg-accent data-[state=checked]:border-accent rounded-sm transition-colors hover:border-border"
                         />
-                        <Label htmlFor="headless" className="text-xs text-foreground cursor-pointer">
+                        <Label htmlFor="headless" className="text-xs text-foreground cursor-pointer font-medium">
                           Headless Mode
                         </Label>
                       </div>
@@ -836,9 +842,8 @@ export function WebsiteClassifier() {
                           onCheckedChange={(checked) => 
                             setConfig(prev => ({ ...prev, antiDetection: !!checked }))
                           }
-                          className="border-border/50 data-[state=checked]:bg-accent data-[state=checked]:border-accent rounded-sm transition-colors hover:border-border"
                         />
-                        <Label htmlFor="antiDetection" className="text-xs text-foreground cursor-pointer">
+                        <Label htmlFor="antiDetection" className="text-xs text-foreground cursor-pointer font-medium">
                           Anti-Detection
                         </Label>
                       </div>
@@ -850,9 +855,8 @@ export function WebsiteClassifier() {
                           onCheckedChange={(checked) => 
                             setConfig(prev => ({ ...prev, overwrite: !!checked }))
                           }
-                          className="border-border/50 data-[state=checked]:bg-accent data-[state=checked]:border-accent rounded-sm transition-colors hover:border-border"
                         />
-                        <Label htmlFor="overwrite" className="text-xs text-foreground cursor-pointer">
+                        <Label htmlFor="overwrite" className="text-xs text-foreground cursor-pointer font-medium">
                           Overwrite Existing Results
                         </Label>
                       </div>
@@ -861,7 +865,7 @@ export function WebsiteClassifier() {
                     <div className="space-y-1">
                       <div className="flex items-center justify-between">
                         <Label className="text-xs font-medium text-foreground">Worker Threads</Label>
-                        <span className="text-xs font-mono text-foreground bg-muted px-1.5 py-0.5 rounded">{config.workers}</span>
+                        <span className="text-xs font-mono text-foreground bg-muted px-1.5 py-0.5 rounded-md shadow-sm">{config.workers}</span>
                       </div>
                       <Slider
                         value={[config.workers]}
@@ -883,7 +887,7 @@ export function WebsiteClassifier() {
                 <Button 
                   onClick={handleProcess}
                   disabled={!domains.trim() || isProcessing || getValidDomains().length === 0}
-                  className="w-full max-w-xs mx-auto bg-green-600 hover:bg-green-700 text-white font-medium transition-all duration-200 hover:scale-[1.02] disabled:hover:scale-100 rounded-md"
+                  className="w-full max-w-xs mx-auto bg-green-600 hover:bg-green-700 text-white font-medium transition-all duration-200 hover:scale-[1.02] disabled:hover:scale-100 rounded-lg shadow-sm hover:shadow-md"
                   size="default"
                 >
                   {isProcessing ? (
@@ -903,7 +907,7 @@ export function WebsiteClassifier() {
             <div className={`lg:col-span-9 flex flex-col min-h-0 order-1 lg:order-2 transition-all duration-700 ease-in-out ${
               uiMode === 'processing' ? 'animate-in slide-in-from-right-4' : ''
             }`}>
-              <div className="bg-muted/20 rounded-lg border border-border/30 p-1 h-full flex flex-col">
+              <div className="bg-muted/20 rounded-xl border border-border/30 p-1 h-full flex flex-col shadow-sm">
                 {isProcessing ? (
                   /* Loading State with Skeleton and Live Updates */
                   <div className="flex flex-col h-full space-y-3 p-3">
@@ -921,29 +925,29 @@ export function WebsiteClassifier() {
                       <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
                         {streamingMode ? (
                           <>
-                            <div className="bg-card p-4 rounded-md border border-border/40">
+                            <div className="bg-card p-4 rounded-lg border border-border/40 shadow-sm hover:shadow-md transition-all duration-200">
                               <div className="text-2xl font-bold text-foreground">{streamingResults.length}</div>
                               <p className="text-xs text-muted-foreground">Total</p>
                             </div>
-                            <div className="bg-card p-4 rounded-md border border-border/40">
+                            <div className="bg-card p-4 rounded-lg border border-border/40 shadow-sm hover:shadow-md transition-all duration-200">
                               <div className="text-2xl font-bold text-foreground">
                                 {streamingResults.filter(r => r.classification_label === "Marketing").length}
                               </div>
                               <p className="text-xs text-muted-foreground">Marketing</p>
                             </div>
-                            <div className="bg-card p-4 rounded-md border border-border/40">
+                            <div className="bg-card p-4 rounded-lg border border-border/40 shadow-sm hover:shadow-md transition-all duration-200">
                               <div className="text-2xl font-bold text-foreground">
                                 {streamingResults.filter(r => r.classification_label === "Portal").length}
                               </div>
                               <p className="text-xs text-muted-foreground">Portal</p>
                             </div>
-                            <div className="bg-card p-4 rounded-md border border-border/40">
+                            <div className="bg-card p-4 rounded-lg border border-border/40 shadow-sm hover:shadow-md transition-all duration-200">
                               <div className="text-2xl font-bold text-foreground">
                                 {streamingResults.filter(r => r.classification_label === "Other").length}
                               </div>
                               <p className="text-xs text-muted-foreground">Other</p>
                             </div>
-                            <div className="bg-card p-4 rounded-md border border-border/40">
+                            <div className="bg-card p-4 rounded-lg border border-border/40 shadow-sm hover:shadow-md transition-all duration-200">
                               <div className="text-2xl font-bold text-red-500">
                                 {streamingResults.filter(r => r.classification_label === "Error").length}
                               </div>
@@ -953,7 +957,7 @@ export function WebsiteClassifier() {
                         ) : (
                           <>
                             {['total', 'marketing', 'portal', 'other', 'errors'].map((stat) => (
-                              <div key={stat} className="bg-card p-4 rounded-md border border-border/40">
+                              <div key={stat} className="bg-card p-4 rounded-lg border border-border/40 shadow-sm">
                                 <div className="h-8 bg-muted/50 rounded skeleton mb-2" />
                                 <div className="h-3 bg-muted/30 rounded skeleton w-16" />
                               </div>
@@ -973,7 +977,7 @@ export function WebsiteClassifier() {
                           </div>
                         )}
                       </div>
-                      <div className="flex-1 border border-border/40 rounded-md overflow-hidden bg-background min-h-0">
+                      <div className="flex-1 border border-border/40 rounded-lg overflow-hidden bg-background min-h-0 shadow-sm">
                         {streamingMode && streamingResults.length > 0 ? (
                           /* Live Results Table */
                           <div className="h-full overflow-auto">
@@ -1051,23 +1055,23 @@ export function WebsiteClassifier() {
                     <div className="space-y-3">
                       <h3 className="text-sm font-semibold text-foreground">Summary</h3>
                       <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
-                        <div className="bg-card p-4 rounded-md border border-border/40 hover:bg-muted/50 transition-colors">
+                        <div className="bg-card p-4 rounded-lg border border-border/40 hover:bg-muted/50 transition-colors shadow-sm hover:shadow-md">
                           <div className="text-2xl font-bold text-foreground">{stats.total}</div>
                           <p className="text-xs text-muted-foreground">Total</p>
                         </div>
-                        <div className="bg-card p-4 rounded-md border border-border/40 hover:bg-muted/50 transition-colors">
+                        <div className="bg-card p-4 rounded-lg border border-border/40 hover:bg-muted/50 transition-colors shadow-sm hover:shadow-md">
                           <div className="text-2xl font-bold text-foreground">{stats.marketing}</div>
                           <p className="text-xs text-muted-foreground">Marketing</p>
                         </div>
-                        <div className="bg-card p-4 rounded-md border border-border/40 hover:bg-muted/50 transition-colors">
+                        <div className="bg-card p-4 rounded-lg border border-border/40 hover:bg-muted/50 transition-colors shadow-sm hover:shadow-md">
                           <div className="text-2xl font-bold text-foreground">{stats.portal}</div>
                           <p className="text-xs text-muted-foreground">Portal</p>
                         </div>
-                        <div className="bg-card p-4 rounded-md border border-border/40 hover:bg-muted/50 transition-colors">
+                        <div className="bg-card p-4 rounded-lg border border-border/40 hover:bg-muted/50 transition-colors shadow-sm hover:shadow-md">
                           <div className={`text-2xl font-bold ${stats.other > 0 ? 'text-foreground' : 'text-muted-foreground'}`}>{stats.other}</div>
                           <p className="text-xs text-muted-foreground">Other</p>
                         </div>
-                        <div className="bg-card p-4 rounded-md border border-border/40 hover:bg-muted/50 transition-colors">
+                        <div className="bg-card p-4 rounded-lg border border-border/40 hover:bg-muted/50 transition-colors shadow-sm hover:shadow-md">
                           <div className={`text-2xl font-bold ${stats.errors > 0 ? 'text-red-500' : 'text-muted-foreground'}`}>{stats.errors}</div>
                           <p className="text-xs text-muted-foreground">Errors</p>
                         </div>
@@ -1098,10 +1102,9 @@ export function WebsiteClassifier() {
                             <Download className="w-3.5 h-3.5 mr-1.5" />
                             Export CSV
                           </Button>
-                        </div>
-                      </div>
+                        </div>                        </div>
 
-                      <div className="flex-1 border border-border/40 rounded-md overflow-hidden bg-background min-h-0">
+                      <div className="flex-1 border border-border/40 rounded-lg overflow-hidden bg-background min-h-0 shadow-sm">
                         <div className="h-full overflow-auto">
                           <Table>
                             <TableHeader>
