@@ -32,7 +32,8 @@ import {
   ArrowUpDown,
   ArrowUp,
   ArrowDown,
-  Eye
+  Eye,
+  Database
 } from "lucide-react";
 import { useTheme } from "next-themes";
 
@@ -541,6 +542,41 @@ export function WebsiteClassifier() {
     URL.revokeObjectURL(url);
   };
 
+  const handleExportDatabase = async () => {
+    try {
+      const response = await fetch('/api/export-database');
+      
+      if (!response.ok) {
+        throw new Error('Failed to export database');
+      }
+
+      // Get the CSV content from the response
+      const csvContent = await response.text();
+      
+      // Create and download the file
+      const blob = new Blob([csvContent], { type: "text/csv" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `database_export_${new Date().toISOString().split('T')[0]}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+
+      toast({
+        title: "Database exported",
+        description: "Full database has been exported to CSV file.",
+      });
+
+    } catch (error) {
+      console.error('Database export error:', error);
+      toast({
+        title: "Export failed",
+        description: error instanceof Error ? error.message : "Failed to export database.",
+        variant: "destructive"
+      });
+    }
+  };
+
   const filteredResults = results.filter(result => 
     result.domain.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -606,7 +642,18 @@ export function WebsiteClassifier() {
                 Backend: {healthStatus.backend ? 'Online' : 'Offline'}
               </span>
             </div>
-            <ThemeToggle />
+            <div className="flex items-center space-x-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleExportDatabase}
+                className="h-8 px-3 hover:bg-secondary/60 border border-border/40 text-xs"
+              >
+                <Database className="h-3 w-3 mr-1" />
+                Export DB
+              </Button>
+              <ThemeToggle />
+            </div>
           </div>
         </div>
       </div>

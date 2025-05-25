@@ -311,6 +311,17 @@ class ClassificationDatabase:
         
         logger.info("Database vacuum completed")
     
+    def get_all_results(self) -> List[Tuple]:
+        """Get all results from the database for export purposes."""
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.execute("""
+                SELECT id, domain, classification_label, summary, confidence_level, 
+                       snippet, html_content, created_at
+                FROM classification_results 
+                ORDER BY created_at DESC
+            """)
+            return cursor.fetchall()
+    
     def get_database_info(self) -> Dict:
         """Get database information and statistics."""
         with sqlite3.connect(self.db_path) as conn:

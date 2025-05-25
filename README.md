@@ -10,9 +10,9 @@ An intelligent web scraping and classification system that analyzes websites usi
 - **Enhanced Database Storage**: SQLite database with full content storage and advanced querying
 - **Content Preservation**: Stores complete HTML and OCR extracted text for analysis
 - **Batch Processing**: Handle multiple domains efficiently with batch tracking
-- **Export Capabilities**: CSV export with filtering options and full content export
-- **Real-time Analytics**: Statistics and progress tracking
-- **Database Management**: Migration tools and query utilities for data exploration
+- **Export Capabilities**: CSV export with filtering options, full content export, and complete database export
+- **Real-time Analytics**: Statistics and progress tracking with scan duration tracking
+- **Database Management**: Advanced querying and data exploration tools
 
 ## Prerequisites
 
@@ -103,32 +103,20 @@ python run_CLI_pipeline.py \
 
 ### Database Management
 
-The system now includes powerful database management tools:
+The system includes powerful database management and export tools:
 
 ```bash
-# Migrate existing database to new schema (adds content storage)
-python migrate_database.py
-
-# Wipe and recreate database with new schema
-python migrate_database.py --wipe
-
-# Query database information
-python query_database.py info
+# View database information and statistics
+python -c "from src.database import ClassificationDatabase; db = ClassificationDatabase(); print(db.get_database_info())"
 
 # View classification statistics
-python query_database.py stats
+python -c "from src.database import ClassificationDatabase; db = ClassificationDatabase(); print(db.get_statistics())"
 
 # View processing batches
-python query_database.py batches
+python -c "from src.database import ClassificationDatabase; db = ClassificationDatabase(); print(db.get_batches())"
 
-# View full content for a specific domain
-python query_database.py content example.com
-
-# Search through stored content
-python query_database.py search "login portal"
-
-# Export results with full content
-python query_database.py export results_with_content.csv
+# Optimize database performance
+python -c "from src.database import ClassificationDatabase; db = ClassificationDatabase(); db.vacuum_database()"
 ```
 
 **CLI Options:**
@@ -138,6 +126,16 @@ python query_database.py export results_with_content.csv
 - `--headful`: Visible browser mode
 - `--anti-detection`: Anti-bot measures
 - `--overwrite`: Reprocess all domains
+
+### Frontend Features
+
+The Next.js frontend provides an intuitive interface with:
+
+- **Real-time Processing**: Live updates during batch processing with scan duration tracking
+- **Advanced Configuration**: Customizable processing options
+- **Database Export**: One-click export of entire database to CSV
+- **Theme Toggle**: Dark/light mode support
+- **Backend Health Monitoring**: Real-time status indicators
 
 ### Input Format
 
@@ -153,9 +151,10 @@ reddit.com
 
 The Flask backend provides REST API endpoints:
 
-- `GET /results` - Query results with filtering (now includes full content)
+- `GET /results` - Query results with filtering (includes full content)
 - `GET /statistics` - Real-time statistics
 - `GET /batches` - Batch management and metadata
+- `GET /export-database` - Export complete database content
 - `POST /export/csv` - Export filtered CSV with full content
 - `GET /health` - System health check
 
@@ -164,6 +163,9 @@ Example:
 ```bash
 # Get portal sites with full content
 curl "http://localhost:5001/results?label=Portal&limit=10"
+
+# Export complete database
+curl "http://localhost:5001/export-database"
 
 # Export filtered results with full extracted content
 curl -X POST http://localhost:5001/export/csv \
@@ -184,12 +186,10 @@ curl "http://localhost:5001/results?batch_id=batch_20250525_123456"
 │   ├── ocr_module.py       # OCR processing
 │   ├── writer.py          # Database and CSV output handling
 │   └── openai_client.py    # AI classification
-├── website-classifier/     # Next.js frontend
+├── website-classifier/     # Next.js frontend with database export
 ├── streamlit_app.py        # Streamlit interface
-├── flask_backend_enhanced.py # Flask API server
+├── flask_backend_enhanced.py # Flask API server with export endpoints
 ├── run_CLI_pipeline.py     # Enhanced CLI tool with content storage
-├── migrate_database.py     # Database migration utility
-├── query_database.py       # Database query and management tool
 └── start.sh               # Startup script
 ```
 
@@ -222,10 +222,10 @@ The enhanced SQLite database now stores:
 ### Enhanced Storage Features
 
 - **Content Preservation**: Full extracted text is stored for later analysis without re-fetching
-- **Batch Tracking**: Each processing run is tracked with configuration details
-- **Search Capabilities**: Full-text search through stored HTML and OCR content
-- **Migration Support**: Tools to upgrade existing databases to new schema
-- **Export Options**: Choose between summary exports or full content exports
+- **Batch Tracking**: Each processing run is tracked with configuration details and scan duration
+- **Database Export**: Complete database export functionality via frontend and API
+- **Search Capabilities**: Advanced querying through the database API
+- **Performance Tracking**: Scan duration monitoring and processing statistics
 
 ## Troubleshooting
 

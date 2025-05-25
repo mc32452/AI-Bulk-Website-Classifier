@@ -395,6 +395,37 @@ def delete_batch(batch_id: str):
         logger.error(f"Error deleting batch {batch_id}: {e}")
         return jsonify({"error": "Failed to delete batch"}), 500
 
+@app.route('/export-database', methods=['GET'])
+def export_database():
+    """Export all database records."""
+    if not db:
+        return jsonify({"error": "Database not available"}), 503
+    
+    try:
+        results = db.get_all_results()
+        
+        # Convert results to the expected format
+        formatted_results = []
+        for result in results:
+            formatted_results.append({
+                'domain': result[1],  # domain
+                'classification_label': result[2],  # classification_label
+                'summary': result[3],  # summary
+                'confidence_level': result[4],  # confidence_level
+                'snippet': result[5],  # snippet
+                'created_at': result[7]  # created_at
+            })
+        
+        return jsonify({
+            "success": True,
+            "results": formatted_results,
+            "total": len(formatted_results)
+        })
+        
+    except Exception as e:
+        logger.error(f"Error exporting database: {e}")
+        return jsonify({"error": "Failed to export database"}), 500
+
 @app.route('/database/vacuum', methods=['POST'])
 def vacuum_database():
     """Optimize database performance."""
