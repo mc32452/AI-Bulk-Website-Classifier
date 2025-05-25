@@ -35,6 +35,7 @@ import {
 import { useTheme } from "next-themes";
 import { FlickeringGrid } from "./magicui/flickering-grid";
 import { StarBorder } from "./magicui/star-border";
+import { Particles } from "./magicui/particles";
 
 interface ClassificationResult {
   domain: string;
@@ -545,6 +546,20 @@ export function WebsiteClassifier() {
   return (
     <TooltipProvider delayDuration={300}>
       <div className="relative h-screen bg-background dark:bg-black overflow-hidden">
+        {/* Particle Background - Only show when not in initial mode */}
+        {uiMode !== 'initial' && (
+          <div className="absolute inset-0 z-0">
+            <Particles
+              className="absolute inset-0"
+              quantity={80}
+              ease={80}
+              color="#ffffff"
+              staticity={50}
+              size={0.4}
+            />
+          </div>
+        )}
+        
         {/* Flickering Grid Background - Covers entire viewport */}
         {uiMode === 'initial' && (
           <FlickeringGrid
@@ -562,14 +577,14 @@ export function WebsiteClassifier() {
           <div className="absolute inset-0 z-5 bg-gradient-to-br from-white/1 via-transparent to-white/1" />
         )}
 
-      {/* Simplified Status Bar - Fully Transparent */}
+      {/* Simplified Status Bar - Transparent */}
       <div className="relative z-10">
         <div className="max-w-7xl mx-auto px-4 md:px-8 py-1.5">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <div className="h-8 px-3 border border-border/40 rounded-md flex items-center space-x-2 bg-background/90 hover:bg-background/95 backdrop-blur-sm text-foreground hover:text-foreground">
+              <div className="h-8 px-3 border border-border/40 rounded-md flex items-center space-x-2 bg-background/90 hover:bg-background/95 backdrop-blur-sm transition-all duration-200">
                 <div className={`w-2.5 h-2.5 rounded-full ${healthStatus.backend ? 'bg-green-600' : 'bg-red-600'}`} />
-                <span className="text-xs">
+                <span className="text-xs font-medium text-foreground">
                   Backend: {healthStatus.backend ? 'Online' : 'Offline'}
                 </span>
               </div>
@@ -817,9 +832,9 @@ export function WebsiteClassifier() {
         </div>
       ) : (
         /* Processing/Results Layout with Animation */
-        <div className="max-w-7xl mx-auto px-4 md:px-8 py-3 transition-all duration-700 ease-in-out animate-fade-scale-in">
+        <div className="max-w-7xl mx-auto px-4 md:px-8 py-11 transition-all duration-700 ease-in-out animate-fade-scale-in">
           {/* Animated Grid Layout */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-6 h-[calc(100vh-10rem)]">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-6 h-[calc(100vh-14rem)]">
             {/* Input Section - Fades in from left */}
             <div className="lg:col-span-3 flex flex-col space-y-3 order-2 lg:order-1 transition-all duration-700 ease-in-out animate-fade-scale-in-left">
               
@@ -838,7 +853,7 @@ export function WebsiteClassifier() {
                   placeholder="example.com"
                   value={domains}
                   onChange={(e) => setDomains(e.target.value)}
-                  className="min-h-[140px] text-sm font-mono resize-none border-2 border-border/30 focus:border-border/60 focus:outline-none rounded-xl hover:border-border/50 bg-white/5 backdrop-blur-sm p-4 shadow-sm hover:shadow-md placeholder:text-muted-foreground/60"
+                  className="min-h-[140px] text-sm font-mono resize-none border-2 border-border/30 focus:border-border/60 focus:outline-none rounded-xl hover:border-border/50 bg-white/10 backdrop-blur-sm p-4 shadow-sm hover:shadow-md placeholder:text-muted-foreground/60"
                 />
                 
                 {/* Domain validation feedback */}
@@ -996,7 +1011,7 @@ export function WebsiteClassifier() {
 
             {/* Results Section - Fades in from right */}
             <div className="lg:col-span-9 flex flex-col min-h-0 order-1 lg:order-2 transition-all duration-700 ease-in-out animate-fade-scale-in-right">
-              <div className="bg-muted/20 rounded-xl border border-border/30 p-1 h-full flex flex-col shadow-sm">
+              <div className="bg-card/95 backdrop-blur-lg rounded-xl border border-border/60 p-1 h-full flex flex-col shadow-lg hover:shadow-xl transition-all duration-300">
                 {isProcessing ? (
                   /* Loading State with Skeleton and Live Updates */
                   <div className="flex flex-col h-full space-y-3 p-3">
@@ -1144,23 +1159,23 @@ export function WebsiteClassifier() {
                     <div className="space-y-3">
                       <h3 className="text-sm font-semibold text-foreground">Summary</h3>
                       <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
-                        <div className="bg-card p-4 rounded-lg border border-border/40 hover:bg-muted/50 transition-colors shadow-sm hover:shadow-md">
+                        <div className="bg-card/90 backdrop-blur-sm p-4 rounded-lg border border-border/40 hover:bg-card/95 transition-colors shadow-sm hover:shadow-md">
                           <div className="text-2xl font-bold text-foreground">{stats.total}</div>
                           <p className="text-xs text-muted-foreground">Total</p>
                         </div>
-                        <div className="bg-card p-4 rounded-lg border border-border/40 hover:bg-muted/50 transition-colors shadow-sm hover:shadow-md">
+                        <div className="bg-card/90 backdrop-blur-sm p-4 rounded-lg border border-border/40 hover:bg-card/95 transition-colors shadow-sm hover:shadow-md">
                           <div className="text-2xl font-bold text-foreground">{stats.marketing}</div>
                           <p className="text-xs text-muted-foreground">Marketing</p>
                         </div>
-                        <div className="bg-card p-4 rounded-lg border border-border/40 hover:bg-muted/50 transition-colors shadow-sm hover:shadow-md">
+                        <div className="bg-card/90 backdrop-blur-sm p-4 rounded-lg border border-border/40 hover:bg-card/95 transition-colors shadow-sm hover:shadow-md">
                           <div className="text-2xl font-bold text-foreground">{stats.portal}</div>
                           <p className="text-xs text-muted-foreground">Portal</p>
                         </div>
-                        <div className="bg-card p-4 rounded-lg border border-border/40 hover:bg-muted/50 transition-colors shadow-sm hover:shadow-md">
+                        <div className="bg-card/90 backdrop-blur-sm p-4 rounded-lg border border-border/40 hover:bg-card/95 transition-colors shadow-sm hover:shadow-md">
                           <div className={`text-2xl font-bold ${stats.other > 0 ? 'text-foreground' : 'text-muted-foreground'}`}>{stats.other}</div>
                           <p className="text-xs text-muted-foreground">Other</p>
                         </div>
-                        <div className="bg-card p-4 rounded-lg border border-border/40 hover:bg-muted/50 transition-colors shadow-sm hover:shadow-md">
+                        <div className="bg-card/90 backdrop-blur-sm p-4 rounded-lg border border-border/40 hover:bg-card/95 transition-colors shadow-sm hover:shadow-md">
                           <div className={`text-2xl font-bold ${stats.errors > 0 ? 'text-red-500' : 'text-muted-foreground'}`}>{stats.errors}</div>
                           <p className="text-xs text-muted-foreground">Errors</p>
                         </div>
