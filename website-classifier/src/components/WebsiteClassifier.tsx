@@ -567,9 +567,9 @@ export function WebsiteClassifier() {
         <div className="max-w-7xl mx-auto px-4 md:px-8 py-1.5">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <div className="h-8 px-3 border border-border/40 rounded-md flex items-center space-x-2 bg-background/90 backdrop-blur-sm">
+              <div className="h-8 px-3 border border-border/40 rounded-md flex items-center space-x-2 bg-background/90 hover:bg-background/95 backdrop-blur-sm text-foreground hover:text-foreground">
                 <div className={`w-2.5 h-2.5 rounded-full ${healthStatus.backend ? 'bg-green-600' : 'bg-red-600'}`} />
-                <span className="text-xs text-muted-foreground/80">
+                <span className="text-xs">
                   Backend: {healthStatus.backend ? 'Online' : 'Offline'}
                 </span>
               </div>
