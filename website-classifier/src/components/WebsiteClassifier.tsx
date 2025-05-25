@@ -622,7 +622,7 @@ export function WebsiteClassifier() {
                   placeholder="example.com"
                   value={domains}
                   onChange={(e) => setDomains(e.target.value)}
-                  className="min-h-[200px] text-sm font-mono resize-none border-2 border-border/30 focus:border-border/60 focus:outline-none rounded-xl hover:border-border/50 bg-white/5 backdrop-blur-sm p-4 shadow-sm hover:shadow-md placeholder:text-muted-foreground/60"
+                  className="min-h-[200px] text-sm font-mono resize-none border-2 border-border/30 focus:border-border/60 focus:outline-none focus:ring-0 rounded-xl hover:border-border/50 bg-white/5 backdrop-blur-sm p-4 shadow-sm hover:shadow-md placeholder:text-muted-foreground/60"
                 />
                 {/* Domain validation feedback */}
                 {domains && domainValidations.length > 0 && (
@@ -646,7 +646,7 @@ export function WebsiteClassifier() {
                 <Button
                   variant="ghost"
                   onClick={() => setShowConfig(prev => !prev)}
-                  className="w-full justify-between h-12 px-4 text-sm hover:bg-transparent rounded-xl"
+                  className="w-full justify-between h-12 px-4 text-sm hover:bg-transparent rounded-xl text-foreground hover:text-foreground"
                 >
                   <div className="flex items-center space-x-1.5">
                     <Settings className="w-4 h-4" />
@@ -861,7 +861,7 @@ export function WebsiteClassifier() {
                 <Button
                   variant="outline"
                   onClick={() => setShowConfig(prev => !prev)}
-                  className="w-full justify-between h-8 px-3 text-xs border-border/50 hover:bg-secondary/60 hover:border-border transition-colors rounded-lg shadow-sm hover:shadow-md"
+                  className="w-full justify-between h-8 px-3 text-xs border-border/50 hover:bg-secondary/60 hover:border-border transition-colors rounded-lg shadow-sm hover:shadow-md text-foreground hover:text-foreground"
                 >
                   <div className="flex items-center space-x-2">
                     <Settings className="w-3 h-3" />
