@@ -11,6 +11,7 @@ import sys
 import os
 import tempfile
 import json
+import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import logging
 from datetime import datetime
@@ -43,6 +44,17 @@ if ClassificationDatabase:
     db = ClassificationDatabase()
 else:
     db = None
+
+def format_scan_duration(duration_seconds):
+    """Format scan duration in a human-readable format."""
+    total_seconds = int(duration_seconds)
+    minutes = total_seconds // 60
+    seconds = total_seconds % 60
+    
+    if minutes == 0:
+        return f"{seconds} second{'s' if seconds != 1 else ''}"
+    else:
+        return f"{minutes} minute{'s' if minutes != 1 else ''} {seconds} second{'s' if seconds != 1 else ''}"
 
 @app.route('/health', methods=['GET'])
 def health_check():
@@ -83,6 +95,8 @@ def classify_domains():
     }
     """
     try:
+        start_time = time.time()  # Start timing
+        
         data = request.get_json()
         
         if not data or 'domains' not in data:
@@ -122,12 +136,17 @@ def classify_domains():
         
         if not domains_to_process:
             logger.info("No new domains to process - all domains already exist in database")
+            end_time = time.time()
+            duration = end_time - start_time
+            duration_text = format_scan_duration(duration)
             return jsonify({
                 "results": existing_results,
                 "batch_id": None,
                 "total_processed": 0,
                 "skipped": len(domains),
-                "message": "All domains already processed. Use overwrite option to reprocess."
+                "duration_seconds": duration,
+                "duration_text": duration_text,
+                "message": f"Scan complete in {duration_text}! All domains already processed. Use overwrite option to reprocess."
             })
         
         logger.info(f"Processing {len(domains_to_process)} new domains (skipping {len(domains) - len(domains_to_process)} existing)")
@@ -187,13 +206,29 @@ def classify_domains():
         # Combine new results with existing results
         all_results = existing_results + results
         
-        logger.info(f"Successfully processed {len(results)} new domains, total results: {len(all_results)}")
+        # Calculate duration
+        end_time = time.time()
+        duration = end_time - start_time
+        duration_text = format_scan_duration(duration)
+        
+        logger.info(f"Successfully processed {len(results)} new domains, total results: {len(all_results)}, duration: {duration_text}")
+        
+        # Create message with duration
+        if len(results) > 0 and len(domains) - len(domains_to_process) > 0:
+            message = f"Scan complete in {duration_text}! Processed {len(results)} new domains, skipped {len(domains) - len(domains_to_process)} existing domains"
+        elif len(results) > 0:
+            message = f"Scan complete in {duration_text}! Processed {len(results)} new domains"
+        else:
+            message = f"Scan complete in {duration_text}! {len(domains) - len(domains_to_process)} domains already in database"
+        
         return jsonify({
             "results": all_results,
             "batch_id": batch_id if results else None,
             "total_processed": len(results),
             "skipped": len(domains) - len(domains_to_process),
-            "message": f"Processed {len(results)} new domains, skipped {len(domains) - len(domains_to_process)} existing domains"
+            "duration_seconds": duration,
+            "duration_text": duration_text,
+            "message": message
         })
         
     except Exception as e:

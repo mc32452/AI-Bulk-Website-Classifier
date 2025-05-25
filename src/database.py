@@ -33,6 +33,9 @@ class ClassificationDatabase:
                     summary TEXT,
                     confidence_level REAL,
                     snippet TEXT,
+                    html_content TEXT,
+                    ocr_content TEXT,
+                    extraction_method TEXT,
                     processing_method TEXT,
                     processed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     batch_id TEXT,
@@ -90,14 +93,17 @@ class ClassificationDatabase:
                 conn.execute("""
                     INSERT INTO classification_results 
                     (domain, classification_label, summary, confidence_level, snippet, 
-                     processing_method, batch_id)
-                    VALUES (?, ?, ?, ?, ?, ?, ?)
+                     html_content, ocr_content, extraction_method, processing_method, batch_id)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """, (
                     result.get('domain', ''),
                     result.get('classification_label', ''),
                     result.get('summary', ''),
                     result.get('confidence_level', 0.0),
                     result.get('snippet', ''),
+                    result.get('html_content', ''),
+                    result.get('ocr_content', ''),
+                    result.get('extraction_method', ''),
                     result.get('processing_method', ''),
                     batch_id
                 ))
@@ -236,7 +242,8 @@ class ClassificationDatabase:
         with open(filename, 'w', newline='', encoding='utf-8') as csvfile:
             if results:
                 fieldnames = ['domain', 'classification_label', 'summary', 
-                            'confidence_level', 'snippet', 'processed_at']
+                            'confidence_level', 'snippet', 'html_content', 'ocr_content',
+                            'extraction_method', 'processed_at']
                 writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
                 writer.writeheader()
                 
@@ -247,6 +254,9 @@ class ClassificationDatabase:
                         'summary': result.get('summary', ''),
                         'confidence_level': result.get('confidence_level', 0.0),
                         'snippet': result.get('snippet', ''),
+                        'html_content': result.get('html_content', ''),
+                        'ocr_content': result.get('ocr_content', ''),
+                        'extraction_method': result.get('extraction_method', ''),
                         'processed_at': result.get('processed_at', '')
                     })
         
@@ -362,6 +372,9 @@ if __name__ == "__main__":
             "summary": "Marketing website for products",
             "confidence_level": 0.85,
             "snippet": "Welcome to our products...",
+            "html_content": "Welcome to our products page. We offer a wide range of high-quality items for your business needs. Our team is dedicated to providing excellent customer service and competitive pricing.",
+            "ocr_content": "",
+            "extraction_method": "html",
             "processing_method": "HTML"
         },
         {
@@ -370,6 +383,9 @@ if __name__ == "__main__":
             "summary": "Employee portal system",
             "confidence_level": 0.92,
             "snippet": "Login to access your account...",
+            "html_content": "Login to access your employee account. Please enter your credentials below. If you need assistance, contact IT support.",
+            "ocr_content": "EMPLOYEE PORTAL\nLogin\nUsername: [____]\nPassword: [____]\n[Login Button]",
+            "extraction_method": "both",
             "processing_method": "HTML"
         }
     ]

@@ -59,7 +59,7 @@ def process_domain(domain: str, text_method: str = 'html', headless: bool = True
         anti_detection: If True, applies anti-bot detection measures
         
     Returns:
-        Classification dict with snippet included.
+        Classification dict with snippet and full content included.
     """
     try:
         html, screenshot = fetch_site_enhanced(domain, headless=headless, anti_detection=anti_detection)
@@ -85,8 +85,13 @@ def process_domain(domain: str, text_method: str = 'html', headless: bool = True
         if "confidence_level" not in result:
             result["confidence_level"] = 0.0
         
-        # Add snippet to result
+        # Add snippet and full content to result
         result["snippet"] = snippet
+        result["html_content"] = text_content
+        result["ocr_content"] = ocr_content
+        result["extraction_method"] = text_method
+        result["processing_method"] = f"Enhanced fetcher ({'headless' if headless else 'headful'}{'+ anti-detection' if anti_detection else ''})"
+        
         return result
     except Exception as e:
         logging.error(f"Error processing {domain}: {e}")
@@ -95,7 +100,11 @@ def process_domain(domain: str, text_method: str = 'html', headless: bool = True
             "classification_label": "Error", 
             "summary": str(e),
             "confidence_level": 0.0,
-            "snippet": "Error occurred during processing"
+            "snippet": "Error occurred during processing",
+            "html_content": "",
+            "ocr_content": "",
+            "extraction_method": text_method,
+            "processing_method": "Error"
         }
 
 
@@ -229,10 +238,21 @@ def main():
     for domain_in_input_file in all_input_domains:
         if domain_in_input_file in final_results_map:
             final_ordered_results.append(final_results_map[domain_in_input_file])
-        
-    write_results(final_ordered_results, args.output)
+    
+    # Create configuration object for database storage
+    config = {
+        "method": args.method,
+        "headless": not args.headful,
+        "anti_detection": args.anti_detection,
+        "workers": args.workers,
+        "domains_file": args.domains,
+        "output_file": args.output
+    }
+    
+    batch_id = write_results(final_ordered_results, args.output, config=config)
     
     print(f'\n🎉 Pipeline completed. Results written to {args.output}')
+    print(f'📦 Database batch ID: {batch_id}')
     
     # Show summary
     total = len(final_ordered_results)

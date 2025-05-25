@@ -38,6 +38,8 @@ interface CompleteData {
   total_processed: number;
   errors: number;
   message: string;
+  duration_seconds?: number;
+  duration_text?: string;
 }
 
 interface ErrorData {
@@ -47,6 +49,19 @@ interface ErrorData {
 interface StreamMessage {
   type: 'progress' | 'result' | 'complete' | 'error';
   data: ProgressData | ResultData | CompleteData | ErrorData;
+}
+
+// Helper function to format duration
+function formatScanDuration(durationMs: number): string {
+  const totalSeconds = Math.floor(durationMs / 1000);
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+
+  if (minutes === 0) {
+    return `${seconds} second${seconds !== 1 ? 's' : ''}`;
+  } else {
+    return `${minutes} minute${minutes !== 1 ? 's' : ''} ${seconds} second${seconds !== 1 ? 's' : ''}`;
+  }
 }
 
 export async function POST(request: NextRequest) {
@@ -84,6 +99,9 @@ export async function POST(request: NextRequest) {
         };
 
         try {
+          // Track overall processing time
+          const startTime = Date.now();
+          
           // Send initial progress
           sendEvent({
             type: 'progress',
@@ -189,12 +207,16 @@ export async function POST(request: NextRequest) {
 
           // Send completion - ensure we don't send after errors
           if (!isClosed) {
+            const endTime = Date.now();
+            const duration = endTime - startTime;
+            const durationText = formatScanDuration(duration);
+            
             const errors = results.filter(r => r.classification_label === "Error").length;
             const totalProcessed = backendInfo.totalProcessed;
             const skipped = backendInfo.skipped;
             
             // Create detailed success message like the original
-            let message = "Scan complete!";
+            let message = `Scan complete in ${durationText}!`;
             if (totalProcessed > 0 && skipped > 0) {
               message = `${totalProcessed} new scan${totalProcessed !== 1 ? 's' : ''}, ${skipped} already in database`;
             } else if (totalProcessed > 0) {
@@ -211,7 +233,9 @@ export async function POST(request: NextRequest) {
                 results,
                 total_processed: totalProcessed,
                 errors: errors,
-                message: message
+                message: message,
+                duration_seconds: duration / 1000,
+                duration_text: durationText
               }
             });
           }

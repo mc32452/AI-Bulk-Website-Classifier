@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 
 interface ProcessRequest {
   domains: string[];
@@ -10,8 +10,6 @@ interface ProcessRequest {
     overwrite: boolean;
   };
 }
-
-// Removed unused interface ClassificationResult
 
 export async function POST(request: NextRequest) {
   try {
@@ -55,7 +53,9 @@ export async function POST(request: NextRequest) {
       total_processed: data.total_processed,
       skipped: data.skipped,
       message: data.message,
-      batch_id: data.batch_id
+      batch_id: data.batch_id,
+      duration_seconds: data.duration_seconds,
+      duration_text: data.duration_text
     });
 
   } catch (error) {
