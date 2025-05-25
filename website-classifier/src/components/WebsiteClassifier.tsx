@@ -132,7 +132,7 @@ function ThemeToggle() {
       variant="ghost"
       size="sm"
       onClick={() => setTheme(theme === "light" ? "dark" : "light")}
-      className="h-8 w-8 p-0 hover:bg-secondary/60 border border-border/40"
+      className="h-8 w-8 p-0 hover:bg-secondary/60 border border-border/40 text-foreground hover:text-foreground"
     >
       {theme === "light" ? (
         <Moon className="h-3 w-3" />
@@ -581,7 +581,7 @@ export function WebsiteClassifier() {
                     variant="ghost"
                     size="sm"
                     onClick={handleExportDatabase}
-                    className="h-8 px-3 hover:bg-secondary/60 border border-border/40 text-xs"
+                    className="h-8 px-3 hover:bg-secondary/60 border border-border/40 text-xs text-foreground hover:text-foreground"
                   >
                     <Database className="h-3 w-3 mr-0.2" />
                     Export DB
@@ -817,17 +817,7 @@ export function WebsiteClassifier() {
         </div>
       ) : (
         /* Processing/Results Layout with Animation */
-        <div className="max-w-7xl mx-auto px-4 md:px-8 py-3 transition-all duration-700 ease-in-out animate-fade-scale-in">
-          {/* Compact Header */}
-          <div className="mb-4">
-            <h1 className="text-xl md:text-2xl font-semibold text-foreground mb-1">
-              Bulk Domain Analyzer
-            </h1>
-            <p className="text-sm text-muted-foreground">
-              Enter a list of domains to classify and analyze their content.
-            </p>
-          </div>
-
+        <div className="max-w-7xl mx-auto px-4 md:px-8 py-6 transition-all duration-700 ease-in-out animate-fade-scale-in">
           {/* Animated Grid Layout */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-6 h-[calc(100vh-10rem)]">
             {/* Input Section - Fades in from left */}
