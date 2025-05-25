@@ -206,6 +206,203 @@ curl -X POST http://localhost:5001/export/csv \
 curl "http://localhost:5001/results?batch_id=batch_20250525_123456"
 ```
 
+## Architecture Overview
+
+### Application Flow Diagram
+
+```mermaid
+flowchart TD
+    A[User Input] --> B{Domain Validation}
+    B -->|Invalid| C[Show Validation Errors]
+    B -->|Valid| D[Configure Processing Options]
+    D --> E[Start Analysis]
+    E --> F[Next.js API Route]
+    F --> G[Flask Backend]
+    G --> H{Processing Method}
+    H -->|HTML| I[Playwright Web Scraping]
+    H -->|OCR| J[Playwright Screenshot + Tesseract OCR]
+    H -->|Both| K[HTML + OCR Processing]
+    I --> L[Content Extraction]
+    J --> L
+    K --> L
+    L --> M[OpenAI Classification]
+    M --> N[SQLite Database Storage]
+    N --> O[Stream Results to Frontend]
+    O --> P[Real-time Progress Updates]
+    P --> Q[Results Table Display]
+    Q --> R{User Actions}
+    R -->|Export CSV| S[Download Filtered Results]
+    R -->|Export Database| T[Download Complete Database]
+    R -->|View Details| U[Show Classification Summary]
+    R -->|New Analysis| A
+    
+    subgraph "Validation Layer"
+        B
+        C
+    end
+    
+    subgraph "Configuration Layer"
+        D
+        V[Method Selection]
+        W[Worker Threads]
+        X[Headless Mode]
+        Y[Anti-Detection]
+        Z[Overwrite Settings]
+        D --> V
+        D --> W
+        D --> X
+        D --> Y
+        D --> Z
+    end
+    
+    subgraph "Processing Pipeline"
+        G
+        H
+        I
+        J
+        K
+        L
+        M
+        N
+    end
+    
+    subgraph "Results Management"
+        O
+        P
+        Q
+        S
+        T
+        U
+    end
+```
+
+### System Architecture Diagram
+
+```mermaid
+graph TB
+    subgraph "Frontend Layer"
+        A[Next.js 15 App]
+        B[React Components]
+        C[TypeScript Interfaces]
+        D[Tailwind CSS + shadcn/ui]
+        E[Custom Hooks]
+        A --> B
+        A --> C
+        A --> D
+        A --> E
+    end
+    
+    subgraph "API Layer"
+        F["API: /process-stream"]
+        G["API: /process"]
+        H["API: /results"]
+        I["API: /export"]
+        J["API: /export-database"]
+        K["API: /batches"]
+        L["API: /statistics"]
+    end
+    
+    subgraph "Backend Services"
+        M[Flask REST API]
+        N[Classification Pipeline]
+        O[Database Manager]
+        P[Export Service]
+        Q[Batch Manager]
+        M --> N
+        M --> O
+        M --> P
+        M --> Q
+    end
+    
+    subgraph "Content Processing"
+        R[Playwright Automation]
+        S[HTML Text Extractor]
+        T[Tesseract OCR Engine]
+        U[Content Validation]
+        R --> S
+        R --> T
+        S --> U
+        T --> U
+    end
+    
+    subgraph "AI Classification"
+        V[OpenAI API Client]
+        W[Classification Prompts]
+        X[Confidence Scoring]
+        Y[Result Validation]
+        V --> W
+        V --> X
+        V --> Y
+    end
+    
+    subgraph "Data Layer"
+        Z[SQLite Database]
+        AA[Classification Results]
+        BB[Extracted Content]
+        CC[Batch Metadata]
+        DD[Processing Statistics]
+        Z --> AA
+        Z --> BB
+        Z --> CC
+        Z --> DD
+    end
+    
+    subgraph "External Services"
+        EE[OpenAI GPT API]
+        FF[Target Websites]
+        GG[Browser Automation]
+    end
+    
+    %% Frontend to API connections
+    A --> F
+    A --> G
+    A --> H
+    A --> I
+    A --> J
+    A --> K
+    A --> L
+    
+    %% API to Backend connections
+    F --> M
+    G --> M
+    H --> O
+    I --> P
+    J --> P
+    K --> Q
+    L --> O
+    
+    %% Backend to Processing connections
+    N --> R
+    N --> V
+    
+    %% Processing to External connections
+    R --> FF
+    R --> GG
+    V --> EE
+    
+    %% Data flow connections
+    U --> V
+    Y --> O
+    O --> Z
+    
+    %% Styling
+    classDef frontend fill:#e1f5fe
+    classDef api fill:#f3e5f5
+    classDef backend fill:#e8f5e8
+    classDef processing fill:#fff3e0
+    classDef ai fill:#fce4ec
+    classDef data fill:#f1f8e9
+    classDef external fill:#ffebee
+    
+    class A,B,C,D,E frontend
+    class F,G,H,I,J,K,L api
+    class M,N,O,P,Q backend
+    class R,S,T,U processing
+    class V,W,X,Y ai
+    class Z,AA,BB,CC,DD data
+    class EE,FF,GG external
+```
+
 ## Tech Stack
 
 ### Frontend
