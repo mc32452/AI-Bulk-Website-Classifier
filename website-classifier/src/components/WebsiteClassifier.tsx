@@ -729,9 +729,7 @@ export function WebsiteClassifier() {
         </div>
       ) : (
         /* Processing/Results Layout with Animation */
-        <div className={`max-w-7xl mx-auto px-4 md:px-8 py-3 transition-all duration-700 ease-in-out ${
-          uiMode === 'processing' ? 'animate-in slide-in-from-top-4' : ''
-        }`}>
+        <div className="max-w-7xl mx-auto px-4 md:px-8 py-3 transition-all duration-700 ease-in-out animate-fade-scale-in">
           {/* Compact Header */}
           <div className="mb-4">
             <h1 className="text-xl md:text-2xl font-semibold text-foreground mb-1">
@@ -744,10 +742,8 @@ export function WebsiteClassifier() {
 
           {/* Animated Grid Layout */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-6 h-[calc(100vh-10rem)]">
-            {/* Input Section - Slides in from left */}
-            <div className={`lg:col-span-3 flex flex-col space-y-3 order-2 lg:order-1 transition-all duration-700 ease-in-out ${
-              uiMode === 'processing' ? 'animate-in slide-in-from-left-4' : ''
-            }`}>
+            {/* Input Section - Fades in from left */}
+            <div className="lg:col-span-3 flex flex-col space-y-3 order-2 lg:order-1 transition-all duration-700 ease-in-out animate-fade-scale-in-left">
               
               {/* Domain Input Section */}
               <div className="space-y-2">
@@ -903,10 +899,8 @@ export function WebsiteClassifier() {
               </div>
             </div>
 
-            {/* Results Section - Slides in from right */}
-            <div className={`lg:col-span-9 flex flex-col min-h-0 order-1 lg:order-2 transition-all duration-700 ease-in-out ${
-              uiMode === 'processing' ? 'animate-in slide-in-from-right-4' : ''
-            }`}>
+            {/* Results Section - Fades in from right */}
+            <div className="lg:col-span-9 flex flex-col min-h-0 order-1 lg:order-2 transition-all duration-700 ease-in-out animate-fade-scale-in-right">
               <div className="bg-muted/20 rounded-xl border border-border/30 p-1 h-full flex flex-col shadow-sm">
                 {isProcessing ? (
                   /* Loading State with Skeleton and Live Updates */
@@ -1002,7 +996,7 @@ export function WebsiteClassifier() {
                                 {streamingResults.map((result, index) => (
                                   <TableRow 
                                     key={`${result.domain}-${index}`}
-                                    className="border-border/40 hover:bg-muted/20 transition-colors animate-in slide-in-from-top-1 duration-300"
+                                    className="border-border/40 hover:bg-muted/20 transition-colors animate-fade-scale-in-up duration-300"
                                   >
                                     <TableCell className="font-mono text-xs text-foreground py-1.5">
                                       {result.domain}

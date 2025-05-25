@@ -236,58 +236,74 @@
     animation: bounce-in 0.6s ease-out;
   }
   
-  /* Layout transition animations */
-  @keyframes slide-in-from-top {
+  /* Modern fade + scale transition animations */
+  @keyframes fade-scale-in {
     0% {
-      transform: translateY(-10px);
       opacity: 0;
+      transform: scale(0.95);
     }
     100% {
-      transform: translateY(0);
       opacity: 1;
+      transform: scale(1);
     }
   }
   
-  @keyframes slide-in-from-left {
+  @keyframes fade-scale-in-up {
     0% {
-      transform: translateX(-20px);
       opacity: 0;
+      transform: scale(0.95) translateY(10px);
     }
     100% {
-      transform: translateX(0);
       opacity: 1;
+      transform: scale(1) translateY(0);
     }
   }
   
-  @keyframes slide-in-from-right {
+  @keyframes fade-scale-in-left {
     0% {
-      transform: translateX(20px);
       opacity: 0;
+      transform: scale(0.95) translateX(-15px);
     }
     100% {
-      transform: translateX(0);
       opacity: 1;
+      transform: scale(1) translateX(0);
     }
   }
   
-  .animate-in {
-    animation-fill-mode: both;
+  @keyframes fade-scale-in-right {
+    0% {
+      opacity: 0;
+      transform: scale(0.95) translateX(15px);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1) translateX(0);
+    }
   }
   
-  .slide-in-from-top-4 {
-    animation: slide-in-from-top 0.7s ease-out;
+  /* Animation utility classes with initial states */
+  .animate-fade-scale-in {
+    opacity: 0;
+    transform: scale(0.95);
+    animation: fade-scale-in 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
   
-  .slide-in-from-left-4 {
-    animation: slide-in-from-left 0.7s ease-out 0.1s;
+  .animate-fade-scale-in-up {
+    opacity: 0;
+    transform: scale(0.95) translateY(10px);
+    animation: fade-scale-in-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
   
-  .slide-in-from-right-4 {
-    animation: slide-in-from-right 0.7s ease-out 0.1s;
+  .animate-fade-scale-in-left {
+    opacity: 0;
+    transform: scale(0.95) translateX(-15px);
+    animation: fade-scale-in-left 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.1s forwards;
   }
   
-  .slide-in-from-top-1 {
-    animation: slide-in-from-top 0.3s ease-out;
+  .animate-fade-scale-in-right {
+    opacity: 0;
+    transform: scale(0.95) translateX(15px);
+    animation: fade-scale-in-right 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.1s forwards;
   }
 }
 
