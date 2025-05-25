@@ -12,6 +12,7 @@ import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/toaster";
 import { useToast } from "@/hooks/use-toast";
 import { 
@@ -536,7 +537,8 @@ export function WebsiteClassifier() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <TooltipProvider delayDuration={300}>
+      <div className="min-h-screen bg-background">
       {/* Simplified Status Bar */}
       <div className="border-b border-border/40 bg-muted/30">
         <div className="max-w-7xl mx-auto px-4 md:px-8 py-1.5">
@@ -548,15 +550,22 @@ export function WebsiteClassifier() {
               </span>
             </div>
             <div className="flex items-center space-x-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleExportDatabase}
-                className="h-8 px-3 hover:bg-secondary/60 border border-border/40 text-xs"
-              >
-                <Database className="h-3 w-3 mr-1" />
-                Export DB
-              </Button>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleExportDatabase}
+                    className="h-8 px-3 hover:bg-secondary/60 border border-border/40 text-xs"
+                  >
+                    <Database className="h-3 w-3 mr-1" />
+                    Export DB
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Export all database results to CSV</p>
+                </TooltipContent>
+              </Tooltip>
               <ThemeToggle />
             </div>
           </div>
@@ -614,7 +623,14 @@ export function WebsiteClassifier() {
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label className="text-sm font-medium text-foreground">Text Extraction Method</Label>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Label className="text-sm font-medium text-foreground cursor-help">Text Extraction Method</Label>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Choose how text is extracted from websites: HTML parsing is faster, OCR is more accurate for complex layouts</p>
+                      </TooltipContent>
+                    </Tooltip>
                     <Select
                       value={config.method} 
                       onValueChange={(value: "HTML" | "OCR") => 
@@ -632,10 +648,24 @@ export function WebsiteClassifier() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label className="text-sm font-medium text-foreground">Worker Threads</Label>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Label className="text-sm font-medium text-foreground cursor-help">Worker Threads</Label>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Number of domains processed simultaneously - higher values are faster but use more resources</p>
+                      </TooltipContent>
+                    </Tooltip>
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
-                        <span className="text-sm text-muted-foreground">Concurrent processing</span>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span className="text-sm text-muted-foreground cursor-help">Concurrent processing</span>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>How many domains will be processed at the same time</p>
+                          </TooltipContent>
+                        </Tooltip>
                         <span className="text-sm font-mono text-foreground bg-muted px-3 py-1.5 rounded-lg shadow-sm">{config.workers}</span>
                       </div>
                       <Slider
@@ -656,14 +686,21 @@ export function WebsiteClassifier() {
                   <div className="flex items-center space-x-3">
                     <Checkbox
                       id="headless-initial"
-                      checked={config.headless}
+                      checked={!config.headless}
                       onCheckedChange={(checked) => 
-                        setConfig(prev => ({ ...prev, headless: !!checked }))
+                        setConfig(prev => ({ ...prev, headless: !checked }))
                       }
                     />
-                    <Label htmlFor="headless-initial" className="text-sm text-foreground cursor-pointer font-medium">
-                      Headless Mode
-                    </Label>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Label htmlFor="headless-initial" className="text-sm text-foreground cursor-help font-medium">
+                          Headfull Mode
+                        </Label>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Show browser window during analysis (useful for debugging and visual confirmation)</p>
+                      </TooltipContent>
+                    </Tooltip>
                   </div>
 
                   <div className="flex items-center space-x-3">
@@ -674,9 +711,16 @@ export function WebsiteClassifier() {
                         setConfig(prev => ({ ...prev, antiDetection: !!checked }))
                       }
                     />
-                    <Label htmlFor="antiDetection-initial" className="text-sm text-foreground cursor-pointer font-medium">
-                      Anti-Detection
-                    </Label>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Label htmlFor="antiDetection-initial" className="text-sm text-foreground cursor-help font-medium">
+                          Anti-Detection
+                        </Label>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Use techniques to avoid being detected as a bot by websites (slower but more reliable)</p>
+                      </TooltipContent>
+                    </Tooltip>
                   </div>
 
                   <div className="flex items-center space-x-3">
@@ -687,9 +731,16 @@ export function WebsiteClassifier() {
                         setConfig(prev => ({ ...prev, overwrite: !!checked }))
                       }
                     />
-                    <Label htmlFor="overwrite-initial" className="text-sm text-foreground cursor-pointer font-medium">
-                      Overwrite Existing
-                    </Label>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Label htmlFor="overwrite-initial" className="text-sm text-foreground cursor-help font-medium">
+                          Overwrite Existing
+                        </Label>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Re-analyze domains that have already been processed and replace previous results</p>
+                      </TooltipContent>
+                    </Tooltip>
                   </div>
                 </div>
               </div>
@@ -817,13 +868,13 @@ export function WebsiteClassifier() {
                       <div className="flex items-center space-x-2">
                         <Checkbox
                           id="headless"
-                          checked={config.headless}
+                          checked={!config.headless}
                           onCheckedChange={(checked) => 
-                            setConfig(prev => ({ ...prev, headless: !!checked }))
+                            setConfig(prev => ({ ...prev, headless: !checked }))
                           }
                         />
                         <Label htmlFor="headless" className="text-xs text-foreground cursor-pointer font-medium">
-                          Headless Mode
+                          Headfull Mode
                         </Label>
                       </div>
 
@@ -1230,6 +1281,7 @@ export function WebsiteClassifier() {
       </Dialog>
       
       <Toaster />
-    </div>
+      </div>
+    </TooltipProvider>
   );
 }
