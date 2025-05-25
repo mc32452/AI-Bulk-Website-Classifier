@@ -557,9 +557,9 @@ export function WebsiteClassifier() {
         <div className="max-w-7xl mx-auto px-4 md:px-8 py-1.5">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <div className={`w-1.5 h-1.5 rounded-full ${healthStatus.backend ? 'bg-accent' : 'bg-destructive'}`} />
+              <div className={`w-2.5 h-2.5 rounded-full ${healthStatus.backend ? 'bg-green-600' : 'bg-red-600'}`} />
               <span className="text-xs text-muted-foreground">
-                Backend: {healthStatus.backend ? 'Connected' : 'Disconnected'}
+                Backend: {healthStatus.backend ? 'Online' : 'Offline'}
               </span>
             </div>
             <ThemeToggle />
