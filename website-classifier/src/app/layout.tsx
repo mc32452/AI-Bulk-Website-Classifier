@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Bulk Domain Analyzer",
+  title: "Bulk Domain Classifier",
   description: "AI-powered bulk domain analysis and classification tool. Analyze and classify websites quickly and efficiently.",
   keywords: ["website classification", "domain analysis", "AI", "machine learning", "bulk analysis", "seo tools", "content analysis"],
   authors: [{ name: "Bulk Domain Analyzer Team" }],
