@@ -265,7 +265,9 @@ export function WebsiteClassifier() {
 
   // Get valid domains only for processing
   const getValidDomains = (): string[] => {
-    return domainValidations.filter(v => v.isValid).map(v => v.domain);
+    const validDomains = domainValidations.filter(v => v.isValid).map(v => v.domain);
+    // Remove duplicates using Set
+    return [...new Set(validDomains)];
   };
 
   const handleProcess = async () => {
@@ -622,7 +624,7 @@ export function WebsiteClassifier() {
                 />
                 {/* Domain validation feedback */}
                 {domains && domainValidations.length > 0 && (
-                  <div className="absolute bottom-4 right-4 flex items-center space-x-4 text-sm bg-background/80 backdrop-blur-sm rounded-md px-3 py-2">
+                  <div className="absolute bottom-4 right-4 flex items-center space-x-4 text-sm">
                     <span className="text-green-600 dark:text-green-400 font-medium">
                       ✓ {domainValidations.filter(v => v.isValid).length} valid domains
                     </span>
@@ -840,7 +842,7 @@ export function WebsiteClassifier() {
                     </span>
                     {domainValidations.filter(v => !v.isValid).length > 0 && (
                       <span className="text-orange-600 dark:text-orange-400">
-                        ⚠ {domainValidations.filter(v => !v.isValid).length} invalid (will be skipped)
+                        ⚠ {domainValidations.filter(v => !v.isValid).length} invalid
                       </span>
                     )}
                   </div>
@@ -949,31 +951,39 @@ export function WebsiteClassifier() {
 
               {/* Action Button - Compact */}
               <div className="mt-auto">
-                <StarBorder 
-                  onClick={handleProcess}
-                  disabled={!domains.trim() || isProcessing || getValidDomains().length === 0}
-                  className="w-full max-w-xs mx-auto font-medium transition-all duration-200 hover:scale-[1.02] disabled:hover:scale-100 disabled:opacity-50"
-                  color="white"
-                  speed="5s"
-                >
-                  {isProcessing ? (
-                    <>
-                      Processing...
-                    </>
-                  ) : getValidDomains().length === 0 && domains.trim() ? (
-                    <>
-                      No Valid Domains
-                    </>
-                  ) : results.length > 0 ? (
-                    <>
-                      New Scan
-                    </>
-                  ) : (
-                    <>
-                      Start Scan
-                    </>
-                  )}
-                </StarBorder>
+                {isProcessing ? (
+                  <div className="w-full max-w-xs mx-auto relative inline-block py-[1px] overflow-hidden rounded-[20px]">
+                    <div className="relative z-1 border text-foreground text-center text-base py-3 px-6 rounded-[20px] bg-gradient-to-b from-background/90 to-muted/90 border-border/40 dark:from-background dark:to-muted dark:border-border font-medium">
+                      <span className="animate-shimmer bg-gradient-to-r from-foreground via-foreground/50 to-foreground bg-[length:200%_100%] bg-clip-text text-transparent">
+                        Processing...
+                      </span>
+                    </div>
+                  </div>
+                ) : (
+                  <StarBorder 
+                    onClick={handleProcess}
+                    disabled={!domains.trim() || getValidDomains().length === 0}
+                    className="w-full max-w-xs mx-auto font-medium transition-all duration-200 hover:scale-[1.02] disabled:hover:scale-100 disabled:opacity-50"
+                    color="white"
+                    speed="5s"
+                    disableBorderAnimation={true}
+                    size="compact"
+                  >
+                    {getValidDomains().length === 0 && domains.trim() ? (
+                      <>
+                        No Valid Domains
+                      </>
+                    ) : results.length > 0 ? (
+                      <>
+                        New Scan
+                      </>
+                    ) : (
+                      <>
+                        Start Scan
+                      </>
+                    )}
+                  </StarBorder>
+                )}
               </div>
             </div>
 
@@ -1107,8 +1117,8 @@ export function WebsiteClassifier() {
                           /* Skeleton Loading */
                           <div className="p-4">
                             <div className="space-y-3">
-                              {parseDomains(domains).slice(0, 6).map((domain) => (
-                                <div key={domain} className="flex items-center space-x-4">
+                              {parseDomains(domains).slice(0, 6).map((domain, index) => (
+                                <div key={`skeleton-${domain}-${index}`} className="flex items-center space-x-4">
                                   <div className="h-4 bg-muted/50 rounded skeleton w-32" />
                                   <div className="h-6 bg-muted/50 rounded skeleton w-20" />
                                   <div className="h-4 bg-muted/30 rounded skeleton flex-1" />
@@ -1214,9 +1224,9 @@ export function WebsiteClassifier() {
                               </TableRow>
                             </TableHeader>
                             <TableBody>
-                              {sortedResults.map((result) => (
+                              {sortedResults.map((result, index) => (
                                 <TableRow 
-                                  key={result.domain} 
+                                  key={`result-${result.domain}-${index}`} 
                                   className="border-border/40 hover:bg-muted/20 transition-colors"
                                 >
                                   <TableCell className="font-mono text-xs text-foreground py-1.5">
