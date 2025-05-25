@@ -19,16 +19,12 @@ import {
   Download, 
   Activity, 
   Search,
-  FileText,
   Moon,
   Sun,
   Settings,
   ChevronDown,
   ChevronUp,
-  TrendingUp,
-  Globe,
   AlertCircle,
-  HelpCircle,
   ArrowUpDown,
   ArrowUp,
   ArrowDown,
@@ -182,10 +178,10 @@ export function WebsiteClassifier() {
       const isHealthy = response.ok;
       setHealthStatus({
         backend: isHealthy,
-        lastChecked: new Date(),
+              lastChecked: new Date(),
       });
       return isHealthy;
-    } catch (error) {
+    } catch {
       setHealthStatus({
         backend: false,
         lastChecked: new Date(),
@@ -393,94 +389,7 @@ export function WebsiteClassifier() {
     }
   };
 
-  const handleProcessFallback = async () => {
-    const validDomains = getValidDomains();
-    
-    if (validDomains.length === 0) {
-      toast({
-        title: "No valid domains",
-        description: "Please enter at least one valid domain to process.",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    // Check backend health
-    const isHealthy = await checkBackendHealth();
-    if (!isHealthy) {
-      toast({
-        title: "Backend Unavailable",
-        description: "The backend service is not responding. Please check if it's running on port 5001.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setIsProcessing(true);
-    setProgress(0);
-    setResults([]); // Clear previous results
-    setStreamingMode(false);
-    
-    try {
-      const response = await fetch('/api/process', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          domains: validDomains,
-          config: {
-            method: config.method,
-            headless: config.headless,
-            antiDetection: config.antiDetection,
-            workers: config.workers,
-            overwrite: config.overwrite
-          }
-        }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Processing failed');
-      }
-
-      const data = await response.json();
-      setResults(data.results);
-      setProgress(100);
-
-      // Use detailed statistics from backend response
-      const totalProcessed = data.total_processed || 0;
-      const skipped = data.skipped || 0;
-      
-      // Create detailed success message
-      const title = "Scan complete!";
-      let description = "";
-      
-      if (totalProcessed > 0 && skipped > 0) {
-        description = `${totalProcessed} new scan${totalProcessed !== 1 ? 's' : ''}, ${skipped} already in database`;
-      } else if (totalProcessed > 0) {
-        description = `${totalProcessed} new scan${totalProcessed !== 1 ? 's' : ''} completed`;
-      } else if (skipped > 0) {
-        description = `${skipped} domain${skipped !== 1 ? 's' : ''} already in database`;
-      } else {
-        description = `Successfully processed ${validDomains.length} domain${validDomains.length !== 1 ? 's' : ''}`;
-      }
-
-      toast({
-        title: title,
-        description: description
-      });
-    } catch (error) {
-      console.error('Processing error:', error);
-      toast({
-        title: "Processing failed", 
-        description: error instanceof Error ? error.message : "An error occurred while processing domains.",
-        variant: "destructive"
-      });
-    } finally {
-      setIsProcessing(false);
-    }
-  };
+  // Removed unused handleProcessFallback function
 
   const handleExport = () => {
     const csv = [

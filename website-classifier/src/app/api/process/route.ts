@@ -11,13 +11,7 @@ interface ProcessRequest {
   };
 }
 
-interface ClassificationResult {
-  domain: string;
-  classification_label: string;
-  summary: string;
-  confidence_level: number;
-  snippet: string;
-}
+// Removed unused interface ClassificationResult
 
 export async function POST(request: NextRequest) {
   try {

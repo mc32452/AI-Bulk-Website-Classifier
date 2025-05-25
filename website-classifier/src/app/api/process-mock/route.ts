@@ -48,7 +48,7 @@ function generateMockResult(domain: string): ClassificationResult {
 export async function POST(request: NextRequest) {
   try {
     const body: ProcessRequest = await request.json();
-    const { domains, config } = body;
+    const { domains } = body;
 
     if (!domains || domains.length === 0) {
       return NextResponse.json(

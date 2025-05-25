@@ -92,7 +92,7 @@ export async function POST(request: NextRequest) {
 
           // Process domains one by one for true streaming
           const results: ClassificationResult[] = [];
-          let backendInfo = {
+          const backendInfo = {
             totalProcessed: 0,
             skipped: 0
           };
