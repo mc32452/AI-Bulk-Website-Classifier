@@ -230,7 +230,7 @@ def main():
             final_results_map[row['domain']] = row
     
     for res in ordered_new_results:
-        final_results_map[res['domain']] = res # New results overwrite existing ones if domains match (though they shouldn't be processed if not overwriting)
+        final_results_map[res['domain']] = res
                                             # Or add new ones.
 
     # Reconstruct final_results based on the order in all_input_domains

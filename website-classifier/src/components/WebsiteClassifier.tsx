@@ -300,11 +300,11 @@ export function WebsiteClassifier() {
   const handleStreamingProcess = async (domainList: string[]) => {
     const startTime = Date.now();
     setScanStartTime(startTime);
-    setScanDuration(null); // Reset previous duration
+    setScanDuration(null); // Reset duration
     
     setIsProcessing(true);
     setProgress(0);
-    setResults([]); // Clear previous results
+    setResults([]); // Clear results
     setStreamingResults([]); // Clear streaming results
     setProcessedCount(0);
     setTotalCount(domainList.length);
@@ -372,8 +372,8 @@ export function WebsiteClassifier() {
                     
                     // Optional: Show toast for each result
                     // toast({
-                    //   title: `${newResult.domain}`,
-                    //   description: `Classified as ${newResult.classification_label}`,
+                    //   title: `${result.domain}`,
+                    //   description: `Classified as ${result.classification_label}`,
                     //   duration: 1000,
                     // });
                     break;
@@ -557,12 +557,12 @@ export function WebsiteClassifier() {
           />
         )}
         
-        {/* Subtle Glassmorphism Overlay - Only for initial mode */}
+        {/* Subtle Glassmorphism Overlay - For initial mode */}
         {uiMode === 'initial' && (
           <div className="absolute inset-0 z-5 bg-gradient-to-br from-white/1 via-transparent to-white/1" />
         )}
 
-      {/* Simplified Status Bar - More Transparent */}
+      {/* Simplified Status Bar - Transparent */}
       <div className="relative z-10 border-b border-border/20 bg-background/10 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-4 md:px-8 py-1.5">
           <div className="flex items-center justify-between">
@@ -682,7 +682,7 @@ export function WebsiteClassifier() {
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="HTML">HTML Parsing (Faster)</SelectItem>
-                            <SelectItem value="OCR">OCR Screenshots (More Accurate)</SelectItem>
+                            <SelectItem value="OCR">OCR Screenshots (Accurate)</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
@@ -1150,7 +1150,7 @@ export function WebsiteClassifier() {
                   </div>
                 ) : results.length > 0 ? (
                   <div className="flex flex-col h-full space-y-2 p-3 results-section">
-                    {/* Enhanced Statistics Summary */}
+                    {/* Statistics Summary */}
                     <div className="space-y-3">
                       <h3 className="text-sm font-semibold text-foreground">Summary</h3>
                       <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
@@ -1177,9 +1177,9 @@ export function WebsiteClassifier() {
                       </div>
                     </div>
 
-                    {/* Enhanced Results Table */}
+                    {/* Results Table */}
                     <div className="flex flex-col flex-1 min-h-0 space-y-3">
-                      {/* Enhanced Search & Export Header */}
+                      {/* Search & Export Header */}
                       <div className="flex items-center justify-between py-2 border-b border-border/20">
                         <h3 className="text-sm font-semibold text-foreground">Detailed Results</h3>
                         <div className="flex items-center gap-3">

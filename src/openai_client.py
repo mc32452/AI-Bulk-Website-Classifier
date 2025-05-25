@@ -15,7 +15,7 @@ if not OPENAI_API_KEY:
 # Initialize OpenAI client
 client = OpenAI(api_key=OPENAI_API_KEY)
 
-# Define function schema for site classification using the new tools format
+# Define function schema for site classification
 CLASSIFY_SITE_TOOL = {
     "type": "function",
     "function": {
@@ -65,7 +65,7 @@ def classify_site(domain: str, html_text: str, ocr_text: str) -> Dict:
     
     while attempts < max_retries:
         try:
-            # Call the OpenAI API with the new client format using GPT-4.1 nano
+            # Call the OpenAI API
             response = client.chat.completions.create(
                 model="gpt-4.1-nano",
                 messages=messages,

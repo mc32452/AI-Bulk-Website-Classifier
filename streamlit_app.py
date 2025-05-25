@@ -156,7 +156,7 @@ def main():
     # Text extraction method
     method = st.sidebar.selectbox(
         "Text Extraction Method",
-        options=['HTML', 'OCR'], # Removed 'Both'
+        options=['HTML', 'OCR'],
         index=0,
         help="How to extract text from websites"
     )
@@ -257,27 +257,26 @@ def main():
                         st.info(f"Skipping {skipped} already processed domains")
                 
                 if not domains_to_process:
-                    st.warning("No new domains to process!")
+                    st.warning("No domains to process!")
                 else:
-                    # Removed processing count message
                     # Progress tracking
                     progress_bar = st.progress(0)
                     status_text = st.empty()
                     
                     # Run classification
                     with st.spinner("AI is analyzing websites..."):
-                        new_results = run_classification_pipeline(
+                        results = run_classification_pipeline(
                             domains_to_process, method, not headful, anti_detection, workers,
                             progress_bar, status_text
                         )
                     
                     # Combine results
                     if overwrite:
-                        final_results = new_results
+                        final_results = results
                     else:
                         # Create a map for easy lookup
                         results_map = {row['domain']: row for row in existing_results}
-                        for result in new_results:
+                        for result in results:
                             results_map[result['domain']] = result
                         
                         # Rebuild in original order
@@ -293,7 +292,7 @@ def main():
                     progress_bar.progress(1.0)
                     status_text.text("Classification complete!")
                     
-                    st.success(f"Successfully processed {len(new_results)} domains!")
+                    st.success(f"Successfully processed {len(results)} domains!")
                     
                     # Cache results to CSV like CLI
                     write_results(final_results, 'results_enhanced.csv')
@@ -325,21 +324,12 @@ def main():
         st.subheader("Detailed Results")
         
         # Filter options
-        # filter_col1, filter_col2 = st.columns(2) # Original columns for filter and search
-        
-        # with filter_col1: # Removed classification filter
-            # classification_filter = st.multiselect(
-            #     "Filter by Classification",
-            #     options=['Marketing', 'Portal', 'Other', 'Error'],
-            #     default=['Marketing', 'Portal', 'Other', 'Error']
-            # )
         
         # Search input directly, without the filter column
         search_term = st.text_input("Search domains", placeholder="Enter domain to search...")
         
         # Apply filters
-        # filtered_df = results_df[results_df['classification_label'].isin(classification_filter)] # Removed classification filter logic
-        filtered_df = results_df # Start with all results if no classification filter
+        filtered_df = results_df
         
         if search_term:
             filtered_df = filtered_df[filtered_df['domain'].str.contains(search_term, case=False, na=False)]
@@ -377,11 +367,7 @@ def main():
                 use_container_width=True
             )
         
-        # Removed the second column that contained the last updated timestamp
-        # with col2:
-            # Show timestamp
-            # if 'last_run' in st.session_state:
-            #     st.info(f"🕒 Last updated: {st.session_state.last_run.strftime('%Y-%m-%d %H:%M:%S')}")
+
         
         # Show logs if there are errors
         if errors > 0:
@@ -391,14 +377,6 @@ def main():
                     st.text_area("Logs", value=logs, height=200)
                 else:
                     st.write("No logs available")
-    
-    # Footer
-    # st.markdown("---") # Removed footer separator
-    # st.markdown( # Removed footer text
-    #     "Built with ❤️ using Streamlit • "
-    #     "Powered by OpenAI GPT-4.1-nano • "
-    #     "Uses Playwright for web scraping"
-    # )
 
 if __name__ == "__main__":
     main()

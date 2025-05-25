@@ -25,7 +25,7 @@ except ImportError:
     print("Warning: Could not import run_CLI_pipeline. Using mock processing.")
     process_domain = None
 
-# Import our new database module
+# Import database module
 try:
     from src.database import ClassificationDatabase
 except ImportError:
@@ -203,7 +203,7 @@ def classify_domains():
                 logger.error(f"Error storing results in database: {e}")
                 # Continue without database storage
         
-        # Combine new results with existing results
+        # Combine results with existing results
         all_results = existing_results + results
         
         # Calculate duration
