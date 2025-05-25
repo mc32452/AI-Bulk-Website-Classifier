@@ -1,6 +1,21 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 
-export async function GET(request: NextRequest) {
+interface DatabaseResult {
+  domain: string;
+  classification_label: string;
+  summary: string;
+  confidence_level: number;
+  snippet: string;
+  created_at: string;
+}
+
+interface BackendResponse {
+  success: boolean;
+  results: DatabaseResult[];
+  total: number;
+}
+
+export async function GET() {
   try {
     const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5001';
     
@@ -16,7 +31,7 @@ export async function GET(request: NextRequest) {
       throw new Error(`Backend responded with status: ${response.status}`);
     }
 
-    const data = await response.json();
+    const data = await response.json() as BackendResponse;
     
     if (!data.results || !Array.isArray(data.results)) {
       throw new Error('Invalid response format from backend');
@@ -24,7 +39,7 @@ export async function GET(request: NextRequest) {
 
     // Create CSV content
     const csvHeaders = ['Domain', 'Classification', 'Summary', 'Confidence', 'Snippet', 'Created At'];
-    const csvRows = data.results.map((result: any) => [
+    const csvRows = data.results.map((result: DatabaseResult) => [
       result.domain || '',
       result.classification_label || '',
       (result.summary || '').replace(/"/g, '""'), // Escape quotes
@@ -36,7 +51,7 @@ export async function GET(request: NextRequest) {
     // Combine headers and rows
     const csvContent = [
       csvHeaders.map(header => `"${header}"`).join(','),
-      ...csvRows.map(row => row.map(cell => `"${cell}"`).join(','))
+      ...csvRows.map((row: string[]) => row.map((cell: string) => `"${cell}"`).join(','))
     ].join('\n');
 
     // Return CSV as downloadable file

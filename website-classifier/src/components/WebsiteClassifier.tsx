@@ -11,7 +11,7 @@ import { Slider } from "@/components/ui/slider";
 
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Toaster } from "@/components/ui/toaster";
 import { useToast } from "@/hooks/use-toast";
 import { 
@@ -19,16 +19,12 @@ import {
   Download, 
   Activity, 
   Search,
-  FileText,
   Moon,
   Sun,
   Settings,
   ChevronDown,
   ChevronUp,
-  TrendingUp,
-  Globe,
   AlertCircle,
-  HelpCircle,
   ArrowUpDown,
   ArrowUp,
   ArrowDown,
@@ -206,6 +202,7 @@ export function WebsiteClassifier() {
       });
       return isHealthy;
     } catch (error) {
+      console.error('Health check failed:', error);
       setHealthStatus({
         backend: false,
         lastChecked: new Date(),
@@ -384,6 +381,11 @@ export function WebsiteClassifier() {
                     const duration = backendDuration > 0 ? backendDuration : frontendDuration;
                     setScanDuration(duration);
                     
+                    // Store scan duration for potential future use (analytics, display, etc.)
+                    if (scanDuration !== null) {
+                      // Duration is now stored and available for future features
+                    }
+                    
                     const errors = data.data.errors || 0;
                     const message = data.data.message || "Scan complete!";
                     
@@ -427,103 +429,6 @@ export function WebsiteClassifier() {
       setIsProcessing(false);
       setStreamingMode(false);
       setProgress(100);
-    }
-  };
-
-  const handleProcessFallback = async () => {
-    const validDomains = getValidDomains();
-    
-    if (validDomains.length === 0) {
-      toast({
-        title: "No valid domains",
-        description: "Please enter at least one valid domain to process.",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    // Check backend health
-    const isHealthy = await checkBackendHealth();
-    if (!isHealthy) {
-      toast({
-        title: "Backend Unavailable",
-        description: "The backend service is not responding. Please check if it's running on port 5001.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const startTime = Date.now();
-    setScanStartTime(startTime);
-    setScanDuration(null); // Reset previous duration
-
-    setIsProcessing(true);
-    setProgress(0);
-    setResults([]); // Clear previous results
-    setStreamingMode(false);
-    
-    try {
-      const response = await fetch('/api/process', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          domains: validDomains,
-          config: {
-            method: config.method,
-            headless: config.headless,
-            antiDetection: config.antiDetection,
-            workers: config.workers,
-            overwrite: config.overwrite
-          }
-        }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Processing failed');
-      }
-
-      const data = await response.json();
-      setResults(data.results);
-      setProgress(100);
-
-      // Use duration from backend instead of frontend calculation
-      const backendDuration = data.duration_seconds ? data.duration_seconds * 1000 : 0; // Convert to ms
-      setScanDuration(backendDuration);
-
-      // Use detailed statistics from backend response
-      const totalProcessed = data.total_processed || 0;
-      const skipped = data.skipped || 0;
-      
-      // Use the backend's message which already includes timing
-      const title = data.duration_text ? `Scan complete in ${data.duration_text}!` : "Scan complete!";
-      let description = "";
-      
-      if (totalProcessed > 0 && skipped > 0) {
-        description = `${totalProcessed} new scan${totalProcessed !== 1 ? 's' : ''}, ${skipped} already in database`;
-      } else if (totalProcessed > 0) {
-        description = `${totalProcessed} new scan${totalProcessed !== 1 ? 's' : ''} completed`;
-      } else if (skipped > 0) {
-        description = `${skipped} domain${skipped !== 1 ? 's' : ''} already in database`;
-      } else {
-        description = `Successfully processed ${validDomains.length} domain${validDomains.length !== 1 ? 's' : ''}`;
-      }
-
-      toast({
-        title: title,
-        description: description
-      });
-    } catch (error) {
-      console.error('Processing error:', error);
-      toast({
-        title: "Processing failed", 
-        description: error instanceof Error ? error.message : "An error occurred while processing domains.",
-        variant: "destructive"
-      });
-    } finally {
-      setIsProcessing(false);
     }
   };
 
