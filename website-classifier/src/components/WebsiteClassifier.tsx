@@ -132,7 +132,7 @@ function ThemeToggle() {
       variant="ghost"
       size="sm"
       onClick={() => setTheme(theme === "light" ? "dark" : "light")}
-      className="h-8 w-8 p-0 hover:bg-secondary/60 border border-border/40 text-foreground hover:text-foreground"
+      className="h-8 w-8 p-0 bg-background/85 hover:bg-secondary/60 border border-border/40 text-foreground hover:text-foreground"
     >
       {theme === "light" ? (
         <Moon className="h-3 w-3" />
@@ -562,12 +562,12 @@ export function WebsiteClassifier() {
           <div className="absolute inset-0 z-5 bg-gradient-to-br from-white/1 via-transparent to-white/1" />
         )}
 
-      {/* Simplified Status Bar - Transparent */}
-      <div className="relative z-10 border-b border-border/20 bg-background/10 backdrop-blur-sm">
+      {/* Simplified Status Bar - Fully Transparent */}
+      <div className="relative z-10 bg-transparent border-transparent">
         <div className="max-w-7xl mx-auto px-4 md:px-8 py-1.5">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <div className="h-8 px-3 border border-border/40 rounded-md flex items-center space-x-2 bg-background/50">
+              <div className="h-8 px-3 border border-border/40 rounded-md flex items-center space-x-2 bg-background/85">
                 <div className={`w-2.5 h-2.5 rounded-full ${healthStatus.backend ? 'bg-green-600' : 'bg-red-600'}`} />
                 <span className="text-xs text-muted-foreground/80">
                   Backend: {healthStatus.backend ? 'Online' : 'Offline'}
@@ -581,7 +581,7 @@ export function WebsiteClassifier() {
                     variant="ghost"
                     size="sm"
                     onClick={handleExportDatabase}
-                    className="h-8 px-3 hover:bg-secondary/60 border border-border/40 text-xs text-foreground hover:text-foreground"
+                    className="h-8 px-3 bg-background/85 hover:bg-secondary/60 border border-border/40 text-xs text-foreground hover:text-foreground"
                   >
                     <Database className="h-3 w-3 mr-0.2" />
                     Export DB
