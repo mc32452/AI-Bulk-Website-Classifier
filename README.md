@@ -1,20 +1,20 @@
-# AI Bulk Website Classifier
+# Bulk Website Classifier
 
-An intelligent web scraping and classification system that analyzes websites using AI. The system fetches web content, extracts text via OCR and HTML parsing, and classifies sites using OpenAI's API with function calling.
+A modern web application for classifying websites in bulk using AI-powered analysis. Features multiple interfaces including a Next.js web app, Streamlit interface, and CLI tool. Built with Flask backend and powered by OpenAI for intelligent website categorization.
 
 ## Features
 
-- **Multiple Interfaces**: Streamlit webapp, CLI tool, and modern Next.js frontend
+- **Multiple Interfaces**: Modern Next.js web app, Streamlit webapp, and CLI tool
+- **AI-Powered Analysis**: OpenAI/Azure OpenAI powered categorization with confidence scoring  
+- **Streaming Processing & Real-time Updates**: Track processing status with live updates and see results as they come in
 - **Content Extraction**: HTML parsing + OCR for comprehensive text extraction
-- **AI Classification**: OpenAI/Azure OpenAI powered categorization with confidence scoring
 - **Database Storage**: SQLite database with full content storage and advanced querying
-- **Content Preservation**: Stores complete HTML and OCR extracted text for analysis
-- **Batch Processing**: Handle multiple domains efficiently with batch tracking
 - **Domain Validation**: Real-time validation with duplicate removal and error feedback
+- **Flexible Configuration**: Choose between HTML and OCR analysis methods
+- **Results Management**: Filter, search, and export classification results
+- **Modern UI**: Built with Next.js and shadcn/ui for a polished user experience
+- **Batch Processing**: Handle multiple domains efficiently with batch tracking
 - **Export Capabilities**: CSV export with filtering options and complete database export
-- **Real-time Analytics**: Statistics and progress tracking with processing duration monitoring
-- **Live Updates**: Real-time processing updates and progress visualization
-- **Database Management**: Advanced querying and data exploration tools
 
 ## Prerequisites
 
@@ -68,25 +68,51 @@ AZURE_OPENAI_API_VERSION=2024-02-15-preview
 AZURE_OPENAI_DEPLOYMENT_NAME=your-deployment-name
 ```
 
-## Usage
+## Quick Start
 
-### Quick Start
+### Recommended: Use the Next.js Web Application
 
 ```bash
-# Start all services
+# 1. Clone and setup
+git clone <repository-url>
+cd bulk-web-describer
+
+# 2. Setup environment
+echo "OPENAI_API_KEY=your_openai_api_key_here" > .env
+
+# 3. Start both backend and frontend
+chmod +x start.sh
 ./start.sh
+```
 
-# Or start individual components:
+The application will be available at [http://localhost:3000](http://localhost:3000)
 
-# 1. Streamlit App (http://localhost:8501)
+### Alternative Interfaces
+
+```bash
+# Streamlit App (http://localhost:8501)
 streamlit run streamlit_app.py
 
-# 2. Flask API (http://localhost:5001)
-python flask_backend_enhanced.py
-
-# 3. Next.js Frontend (http://localhost:3000)
-cd website-classifier && npm run dev
+# CLI Tool
+python run_CLI_pipeline.py
 ```
+
+## Usage
+
+### Next.js Web App (Recommended)
+
+1. **Input Domains**: Enter website URLs in the textarea (one per line). Invalid domains will be flagged.
+2. **Configure Settings**: 
+   - Choose text extraction method (HTML Parsing or OCR Screenshots)
+   - Set worker threads for parallel processing (1-8)
+   - Enable/disable headless mode for browser automation
+   - Optionally enable anti-detection measures
+   - Decide whether to overwrite existing results for previously scanned domains
+3. **Start Analysis**: Click "Start Analysis" to begin
+4. **Monitor Progress**: Observe real-time progress with individual domain status and overall completion
+5. **Review Results**: View classified websites in the sortable and searchable results table
+6. **View Detailed Summary**: Click the eye icon to see detailed summaries for specific domains
+7. **Export Data**: Download results as a CSV file for further analysis
 
 ### CLI Usage
 
@@ -180,6 +206,28 @@ curl -X POST http://localhost:5001/export/csv \
 curl "http://localhost:5001/results?batch_id=batch_20250525_123456"
 ```
 
+## Tech Stack
+
+### Frontend
+- **Next.js 15**: React framework with App Router
+- **TypeScript**: Type-safe development
+- **Tailwind CSS**: Utility-first styling
+- **shadcn/ui**: Modern component library
+- **Lucide React**: Icon library
+- **React Hooks**: Custom hooks for state management
+
+### Backend
+- **Flask**: Python web framework with REST API
+- **SQLite**: Database for storing results and content
+- **OpenAI API**: GPT-powered text analysis and classification
+- **Playwright**: Modern web scraping and automation
+- **Tesseract OCR**: Optical character recognition
+- **Python Libraries**: pandas, requests, concurrent.futures
+
+### Alternative Interfaces
+- **Streamlit**: Rapid prototyping web interface
+- **CLI Tool**: Command-line interface for batch processing
+
 ## Project Structure
 
 ```
@@ -230,6 +278,37 @@ The SQLite database stores:
 - **Database Export**: Complete database export functionality via frontend and API
 - **Search Capabilities**: Advanced querying through the database API
 - **Performance Tracking**: Scan duration monitoring and processing statistics
+
+## Configuration Options
+
+- **Analysis Method**: HTML parsing (faster) or OCR (more comprehensive)
+- **Worker Threads**: Number of parallel processing threads (1-8)
+- **Headless Mode**: Run browser automation in the background
+- **Anti-Detection**: Attempt to use stealth techniques to avoid bot detection (use responsibly)
+- **Overwrite Existing Results**: If checked, re-processes and overwrites data for domains already in the database. Otherwise, skips them
+
+## Development
+
+### Adding New Features
+
+1. **Frontend Components**: Add new UI components in `website-classifier/src/components/`
+2. **API Routes**: Create new endpoints in `website-classifier/src/app/api/`
+3. **Backend Logic**: Extend functionality in `src/` modules
+4. **Styling**: Use Tailwind classes and shadcn/ui components
+5. **Types**: Define TypeScript interfaces for data structures
+
+### Testing
+
+```bash
+# Frontend development
+cd website-classifier
+npm run dev          # Run development server with hot reload
+npm run build        # Build for production
+npm start           # Start production server
+
+# Backend testing
+python -m pytest    # Run tests (if configured)
+```
 
 ## Troubleshooting
 
