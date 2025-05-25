@@ -5,13 +5,15 @@ An intelligent web scraping and classification system that analyzes websites usi
 ## Features
 
 - **Multiple Interfaces**: Streamlit webapp, CLI tool, and modern Next.js frontend
-- **Intelligent Content Extraction**: HTML parsing + OCR for comprehensive text extraction
-- **AI Classification**: OpenAI/Azure OpenAI powered categorization
-- **Enhanced Database Storage**: SQLite database with full content storage and advanced querying
+- **Content Extraction**: HTML parsing + OCR for comprehensive text extraction
+- **AI Classification**: OpenAI/Azure OpenAI powered categorization with confidence scoring
+- **Database Storage**: SQLite database with full content storage and advanced querying
 - **Content Preservation**: Stores complete HTML and OCR extracted text for analysis
 - **Batch Processing**: Handle multiple domains efficiently with batch tracking
-- **Export Capabilities**: CSV export with filtering options, full content export, and complete database export
-- **Real-time Analytics**: Statistics and progress tracking with scan duration tracking
+- **Domain Validation**: Real-time validation with duplicate removal and error feedback
+- **Export Capabilities**: CSV export with filtering options and complete database export
+- **Real-time Analytics**: Statistics and progress tracking with processing duration monitoring
+- **Live Updates**: Real-time processing updates and progress visualization
 - **Database Management**: Advanced querying and data exploration tools
 
 ## Prerequisites
@@ -79,7 +81,7 @@ AZURE_OPENAI_DEPLOYMENT_NAME=your-deployment-name
 # 1. Streamlit App (http://localhost:8501)
 streamlit run streamlit_app.py
 
-# 2. Enhanced Flask API (http://localhost:5001)
+# 2. Flask API (http://localhost:5001)
 python flask_backend_enhanced.py
 
 # 3. Next.js Frontend (http://localhost:3000)
@@ -131,9 +133,11 @@ python -c "from src.database import ClassificationDatabase; db = ClassificationD
 
 The Next.js frontend provides an intuitive interface with:
 
-- **Real-time Processing**: Live updates during batch processing with scan duration tracking
+- **Real-time Processing**: Live updates during batch processing with duration tracking
+- **Domain Validation**: Real-time domain validation with duplicate detection and error feedback
 - **Advanced Configuration**: Customizable processing options
 - **Database Export**: One-click export of entire database to CSV
+- **Animated Interface**: Modern UI with animated backgrounds and loading states
 - **Theme Toggle**: Dark/light mode support
 - **Backend Health Monitoring**: Real-time status indicators
 
@@ -180,7 +184,7 @@ curl "http://localhost:5001/results?batch_id=batch_20250525_123456"
 
 ```
 ├── src/                    # Core modules
-│   ├── database.py         # Enhanced SQLite database with content storage
+│   ├── database.py         # SQLite database with content storage
 │   ├── fetcher_enhanced.py # Web scraping with Playwright
 │   ├── text_extractor.py   # HTML text extraction
 │   ├── ocr_module.py       # OCR processing
@@ -189,7 +193,7 @@ curl "http://localhost:5001/results?batch_id=batch_20250525_123456"
 ├── website-classifier/     # Next.js frontend with database export
 ├── streamlit_app.py        # Streamlit interface
 ├── flask_backend_enhanced.py # Flask API server with export endpoints
-├── run_CLI_pipeline.py     # Enhanced CLI tool with content storage
+├── run_CLI_pipeline.py     # CLI tool with content storage
 └── start.sh               # Startup script
 ```
 
@@ -209,7 +213,7 @@ Edit `src/openai_client.py` and update the `CLASSIFY_SITE_TOOL` enum:
 
 ### Database Schema
 
-The enhanced SQLite database now stores:
+The SQLite database stores:
 - Domain and URL information
 - Classification results with confidence scores
 - **Full HTML extracted content** for complete text analysis
@@ -219,7 +223,7 @@ The enhanced SQLite database now stores:
 - Batch metadata and timestamps with configuration tracking
 - Processing statistics and performance metrics
 
-### Enhanced Storage Features
+### Storage Features
 
 - **Content Preservation**: Full extracted text is stored for later analysis without re-fetching
 - **Batch Tracking**: Each processing run is tracked with configuration details and scan duration

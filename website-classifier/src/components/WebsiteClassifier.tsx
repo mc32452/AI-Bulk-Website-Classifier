@@ -563,7 +563,7 @@ export function WebsiteClassifier() {
         )}
 
       {/* Simplified Status Bar - More Transparent */}
-      <div className="relative z-10 border-b border-border/20 bg-background/20 backdrop-blur-sm">
+      <div className="relative z-10 border-b border-border/20 bg-background/10 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-4 md:px-8 py-1.5">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
@@ -605,7 +605,7 @@ export function WebsiteClassifier() {
             {/* Centered Header */}
             <div className="mb-8 text-center">
               <h1 className="text-3xl md:text-4xl font-bold text-foreground/90 mb-3">
-                Bulk Domain Analyzer
+                Bulk Domain Classifier
               </h1>
               <p className="text-base text-muted-foreground/80 max-w-2xl mx-auto">
                 Enter a list of domains to classify and analyze their content using AI-powered analysis.
@@ -622,7 +622,7 @@ export function WebsiteClassifier() {
                   placeholder="example.com"
                   value={domains}
                   onChange={(e) => setDomains(e.target.value)}
-                  className="min-h-[200px] text-sm font-mono resize-none border-2 border-border/30 focus:border-border/60 focus:outline-none rounded-xl transition-all duration-200 hover:border-border/50 bg-white/5 backdrop-blur-sm p-4 shadow-sm hover:shadow-md placeholder:text-muted-foreground/60"
+                  className="min-h-[200px] text-sm font-mono resize-none border-2 border-border/30 focus:border-border/60 focus:outline-none rounded-xl hover:border-border/50 bg-white/5 backdrop-blur-sm p-4 shadow-sm hover:shadow-md placeholder:text-muted-foreground/60"
                 />
                 {/* Domain validation feedback */}
                 {domains && domainValidations.length > 0 && (
@@ -778,7 +778,7 @@ export function WebsiteClassifier() {
               <StarBorder 
                 onClick={handleProcess}
                 disabled={!domains.trim() || isProcessing || getValidDomains().length === 0}
-                className="font-semibold text-lg transition-all duration-200 hover:scale-[1.02] disabled:hover:scale-100 disabled:opacity-50"
+                className="font-semibold text-lg transition-all duration-200 hover:scale-[1.02] disabled:hover:scale-100 disabled:opacity-50 [&>div]:!py-4"
                 color="white"
                 speed="4s"
               >
