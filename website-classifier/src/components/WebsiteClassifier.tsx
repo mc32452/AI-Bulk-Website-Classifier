@@ -34,6 +34,7 @@ import {
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { FlickeringGrid } from "./magicui/flickering-grid";
+import { StarBorder } from "./magicui/star-border";
 
 interface ClassificationResult {
   domain: string;
@@ -621,7 +622,7 @@ export function WebsiteClassifier() {
                 />
                 {/* Domain validation feedback */}
                 {domains && domainValidations.length > 0 && (
-                  <div className="absolute bottom-4 right-4 flex items-center space-x-4 text-sm px-3 py-2">
+                  <div className="absolute bottom-4 right-4 flex items-center space-x-4 text-sm bg-background/80 backdrop-blur-sm rounded-md px-3 py-2">
                     <span className="text-green-600 dark:text-green-400 font-medium">
                       ✓ {domainValidations.filter(v => v.isValid).length} valid domains
                     </span>
@@ -770,29 +771,27 @@ export function WebsiteClassifier() {
 
             {/* Large Action Button */}
             <div className="text-center">
-              <Button 
+              <StarBorder 
                 onClick={handleProcess}
                 disabled={!domains.trim() || isProcessing || getValidDomains().length === 0}
-                className="bg-green-600 hover:bg-green-700 text-white font-semibold text-base px-8 py-3 rounded-xl transition-all duration-200 hover:scale-[1.02] disabled:hover:scale-100 shadow-lg hover:shadow-xl"
-                size="lg"
+                className="font-semibold text-lg transition-all duration-200 hover:scale-[1.02] disabled:hover:scale-100 disabled:opacity-50"
+                color="white"
+                speed="4s"
               >
                 {isProcessing ? (
                   <>
-                    <Activity className="w-5 h-5 mr-2 animate-spin" />
                     Processing...
                   </>
                 ) : getValidDomains().length === 0 && domains.trim() ? (
                   <>
-                    <AlertCircle className="w-5 h-5 mr-2" />
                     No Valid Domains
                   </>
                 ) : (
                   <>
-                    <Play className="w-5 h-5 mr-2" />
-                    Start Analysis ({getValidDomains().length} domains)
+                    Start Analysis
                   </>
                 )}
-              </Button>
+              </StarBorder>
             </div>
           </div>
           </div>
@@ -950,22 +949,31 @@ export function WebsiteClassifier() {
 
               {/* Action Button - Compact */}
               <div className="mt-auto">
-                <Button 
+                <StarBorder 
                   onClick={handleProcess}
                   disabled={!domains.trim() || isProcessing || getValidDomains().length === 0}
-                  className="w-full max-w-xs mx-auto bg-green-600 hover:bg-green-700 text-white font-medium transition-all duration-200 hover:scale-[1.02] disabled:hover:scale-100 rounded-lg shadow-sm hover:shadow-md"
-                  size="default"
+                  className="w-full max-w-xs mx-auto font-medium transition-all duration-200 hover:scale-[1.02] disabled:hover:scale-100 disabled:opacity-50"
+                  color="white"
+                  speed="5s"
                 >
                   {isProcessing ? (
-                    <>Processing...</>
+                    <>
+                      Processing...
+                    </>
                   ) : getValidDomains().length === 0 && domains.trim() ? (
-                    <>No Valid Domains</>
+                    <>
+                      No Valid Domains
+                    </>
                   ) : results.length > 0 ? (
-                    <>New Scan ({getValidDomains().length} domains)</>
+                    <>
+                      New Scan
+                    </>
                   ) : (
-                    <>Start Scan ({getValidDomains().length} domains)</>
+                    <>
+                      Start Scan
+                    </>
                   )}
-                </Button>
+                </StarBorder>
               </div>
             </div>
 
