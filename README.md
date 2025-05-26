@@ -162,7 +162,67 @@ python run_CLI_pipeline.py \
 
 ### Database Management
 
-The system includes powerful database management and export tools:
+The system includes comprehensive database management tools for wiping data and starting fresh:
+
+#### 🗄️ Database Management CLI Tool
+
+A dedicated CLI tool (`manage_database.py`) provides easy database management:
+
+```bash
+# Show current database status and information
+python manage_database.py --info
+
+# Clear all data (keeps database structure) - RECOMMENDED
+python manage_database.py --clear
+
+# Reset database by recreating all tables
+python manage_database.py --reset
+
+# Delete entire database file (nuclear option)
+python manage_database.py --delete-file
+
+# Optimize database performance
+python manage_database.py --vacuum
+
+# Skip confirmation prompts (use with caution)
+python manage_database.py --clear --force
+```
+
+#### 🧹 Starting Fresh - Three Options
+
+**Option 1: Clear All Data (Recommended)**
+```bash
+python manage_database.py --clear
+```
+- ✅ Removes all classification results and batches
+- ✅ Keeps database structure intact
+- ✅ Fastest option - application continues working immediately
+
+**Option 2: Reset Database Schema**
+```bash
+python manage_database.py --reset
+```
+- ✅ Drops and recreates all tables
+- ✅ Ensures clean schema
+- ✅ Good for fixing database structure issues
+
+**Option 3: Delete Entire Database File**
+```bash
+python manage_database.py --delete-file
+```
+- ⚠️ Completely removes the database file
+- ⚠️ New database created on next application run
+- ⚠️ Most thorough but requires restart
+
+#### 🌐 Web Interface Database Management
+
+Database management is also available through the web interface via API endpoints:
+
+- `/database/clear` - Clear all data
+- `/database/reset` - Reset database schema  
+- `/database/vacuum` - Optimize database
+
+#### 📊 Database Information Commands
 
 ```bash
 # View database information and statistics
@@ -173,9 +233,6 @@ python -c "from src.database import ClassificationDatabase; db = ClassificationD
 
 # View processing batches
 python -c "from src.database import ClassificationDatabase; db = ClassificationDatabase(); print(db.get_batches())"
-
-# Optimize database performance
-python -c "from src.database import ClassificationDatabase; db = ClassificationDatabase(); db.vacuum_database()"
 ```
 
 **CLI Options:**
@@ -523,6 +580,13 @@ The SQLite database stores:
 2. **Playwright browser errors**: Run `playwright install`
 3. **API key errors**: Check `.env` file configuration
 4. **Port conflicts**: Modify port numbers in startup scripts
+5. **Database management tool errors**: Ensure you're running from the project root directory
+
+### Database Management Troubleshooting
+
+- **"Could not import database module" error**: Make sure you're running the `manage_database.py` script from the project root directory
+- **Database locked errors**: Stop all running applications (Flask backend, Streamlit, CLI) before database operations
+- **Permission errors**: Ensure the database file has proper read/write permissions
 
 ### Performance Tips
 
