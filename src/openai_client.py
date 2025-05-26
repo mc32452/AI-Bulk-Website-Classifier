@@ -3,45 +3,17 @@ import json
 import logging
 from typing import Dict
 from dotenv import load_dotenv
-from openai import OpenAI, AzureOpenAI
+from openai import OpenAI
 
 # Load environment variables
 load_dotenv()
-
-# Check for Azure OpenAI configuration first
-AZURE_OPENAI_API_KEY = os.getenv("AZURE_OPENAI_API_KEY")
-AZURE_OPENAI_ENDPOINT = os.getenv("AZURE_OPENAI_ENDPOINT")
-AZURE_OPENAI_API_VERSION = os.getenv("AZURE_OPENAI_API_VERSION", "2024-02-15-preview")
-AZURE_OPENAI_DEPLOYMENT_NAME = os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME")
-
-# Regular OpenAI configuration
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+if not OPENAI_API_KEY:
+    logging.error("OPENAI_API_KEY is not set in environment variables")
+    raise ValueError("OPENAI_API_KEY must be set in environment variables")
 
-# Determine which client to use and initialize
-if AZURE_OPENAI_API_KEY and AZURE_OPENAI_ENDPOINT and AZURE_OPENAI_DEPLOYMENT_NAME:
-    # Use Azure OpenAI
-    client = AzureOpenAI(
-        api_key=AZURE_OPENAI_API_KEY,
-        api_version=AZURE_OPENAI_API_VERSION,
-        azure_endpoint=AZURE_OPENAI_ENDPOINT
-    )
-    MODEL_NAME = AZURE_OPENAI_DEPLOYMENT_NAME
-    CLIENT_TYPE = "Azure OpenAI"
-    logging.info(f"Using Azure OpenAI with deployment: {AZURE_OPENAI_DEPLOYMENT_NAME}")
-elif OPENAI_API_KEY:
-    # Use regular OpenAI
-    client = OpenAI(api_key=OPENAI_API_KEY)
-    MODEL_NAME = "gpt-4o-mini"  # Updated to a more widely available model
-    CLIENT_TYPE = "OpenAI"
-    logging.info("Using OpenAI API")
-else:
-    error_msg = (
-        "No valid API configuration found. Please set either:\n"
-        "1. OPENAI_API_KEY for OpenAI, or\n"
-        "2. AZURE_OPENAI_API_KEY, AZURE_OPENAI_ENDPOINT, and AZURE_OPENAI_DEPLOYMENT_NAME for Azure OpenAI"
-    )
-    logging.error(error_msg)
-    raise ValueError(error_msg)
+# Initialize OpenAI client
+client = OpenAI(api_key=OPENAI_API_KEY)
 
 # Define function schema for site classification
 CLASSIFY_SITE_TOOL = {
@@ -53,8 +25,8 @@ CLASSIFY_SITE_TOOL = {
             "type": "object",
             "properties": {
                 "domain": {"type": "string", "description": "The domain name of the website"},
-                "classification_label": {"type": "string", "enum": ["Marketing", "Portal", "Other"],
-                    "description": "The primary classification category: 'Marketing', 'Portal', or 'Other'"},
+                "classification_label": {"type": "string", "enum": ["Marketing", "Portal", "Other", "Error"],
+                    "description": "The primary classification category: 'Marketing', 'Portal', 'Other', or 'Error'"},
                 "summary": {"type": "string", "description": "A very brief summary of the website's purpose and content"},
                 "confidence_level": {"type": "number", "description": "A self-reported confidence level between 0.0 and 1.0"}  # Added confidence level
             },
@@ -65,17 +37,16 @@ CLASSIFY_SITE_TOOL = {
 
 def classify_site(domain: str, html_text: str, ocr_text: str) -> Dict:
     """
-    Calls OpenAI or Azure OpenAI with function-calling to classify a site.
-    Automatically uses the configured client (Azure OpenAI or regular OpenAI).
+    Calls OpenAI GPT-4.1 Nano with function-calling to classify a site.
     Implements retry logic with exponential backoff for reliability.
-    Returns a dict with keys: domain, classification_label, summary, confidence_level.
+    Returns a dict with keys: domain, classification_label, summary.
     """
     # Prepare the user message with site content
     user_content = (
         f"Classify the website domain: {domain}\n\n"
         f"HTML Content: {html_text[:3000] if html_text else 'No HTML content available'}\n\n"
         f"OCR Text: {ocr_text[:1000] if ocr_text else 'No OCR content available'}\n\n"
-        "Please classify this website into one of: Marketing, Portal, Other. "
+        "Please classify this website into one of: Marketing, Portal, Other, Error. "
         "Provide a brief summary. Also return your confidence level as a number between 0 and 1."
     )
     
@@ -94,9 +65,9 @@ def classify_site(domain: str, html_text: str, ocr_text: str) -> Dict:
     
     while attempts < max_retries:
         try:
-            # Call the OpenAI or Azure OpenAI API
+            # Call the OpenAI API
             response = client.chat.completions.create(
-                model=MODEL_NAME,
+                model="gpt-4.1-nano",
                 messages=messages,
                 tools=[CLASSIFY_SITE_TOOL],
                 tool_choice={"type": "function", "function": {"name": "classify_site"}},
@@ -124,7 +95,7 @@ def classify_site(domain: str, html_text: str, ocr_text: str) -> Dict:
                 if field not in result:
                     raise ValueError(f"Missing required field: {field}")
             
-            logging.info(f"Successfully classified {domain} as {result['classification_label']} with confidence {result['confidence_level']} using {CLIENT_TYPE}")
+            logging.info(f"Successfully classified {domain} as {result['classification_label']} with confidence {result['confidence_level']}")
             return result
             
         except json.JSONDecodeError as e:
@@ -139,48 +110,11 @@ def classify_site(domain: str, html_text: str, ocr_text: str) -> Dict:
                 import time
                 time.sleep(2 ** attempts)
     
-    # If all retries failed, raise an exception instead of returning error classification
+    # If all retries failed, return an error classification
     logging.error(f"Failed to classify site after {max_retries} attempts: {domain}")
-    raise Exception(f"Failed to classify due to API errors after {max_retries} attempts")
-
-def get_ai_provider_info() -> Dict:
-    """
-    Returns information about the current AI provider configuration.
-    Useful for debugging and user feedback.
-    """
     return {
-        "provider": CLIENT_TYPE,
-        "model": MODEL_NAME,
-        "endpoint": AZURE_OPENAI_ENDPOINT if CLIENT_TYPE == "Azure OpenAI" else "https://api.openai.com",
-        "api_version": AZURE_OPENAI_API_VERSION if CLIENT_TYPE == "Azure OpenAI" else None
+        "domain": domain,
+        "classification_label": "Error",
+        "summary": f"Failed to classify due to API errors after {max_retries} attempts",
+        "confidence_level": 0.0  # Default confidence for errors
     }
-
-def test_ai_connection() -> Dict:
-    """
-    Test the AI connection with a simple request.
-    Returns success status and provider info.
-    """
-    try:
-        # Simple test message
-        test_response = client.chat.completions.create(
-            model=MODEL_NAME,
-            messages=[{"role": "user", "content": "Hello, respond with 'OK' if you can process this message."}],
-            max_tokens=10,
-            temperature=0
-        )
-        
-        response_text = test_response.choices[0].message.content.strip()
-        
-        return {
-            "success": True,
-            "provider_info": get_ai_provider_info(),
-            "response": response_text,
-            "message": f"Successfully connected to {CLIENT_TYPE}"
-        }
-    except Exception as e:
-        return {
-            "success": False,
-            "provider_info": get_ai_provider_info(),
-            "error": str(e),
-            "message": f"Failed to connect to {CLIENT_TYPE}: {str(e)}"
-        }

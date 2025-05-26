@@ -58,10 +58,9 @@ def format_scan_duration(duration_seconds):
 
 @app.route('/health', methods=['GET'])
 def health_check():
-    """Health check endpoint with AI provider information."""
+    """Health check endpoint."""
     status = {"status": "healthy", "timestamp": datetime.now().isoformat()}
     
-    # Database status
     if db:
         try:
             db_info = db.get_database_info()
@@ -75,18 +74,6 @@ def health_check():
             status["database"] = {"connected": False, "error": str(e)}
     else:
         status["database"] = {"connected": False, "error": "Database module not available"}
-    
-    # AI provider status
-    try:
-        from src.openai_client import get_ai_provider_info, test_ai_connection
-        ai_test = test_ai_connection()
-        status["ai_provider"] = ai_test
-    except Exception as e:
-        status["ai_provider"] = {
-            "success": False,
-            "error": str(e),
-            "message": "Failed to load AI provider configuration"
-        }
     
     return jsonify(status)
 
@@ -137,7 +124,7 @@ def classify_domains():
         if db and not overwrite:
             # Check which domains already exist in the database
             for domain in domains:
-                existing = db.get_results(domain_filter=domain, limit=1)
+                existing = db.get_results_by_domain(domain)  # Use exact domain match
                 if existing:
                     logger.info(f"Skipping already processed domain: {domain}")
                     existing_results.extend(existing)
@@ -146,6 +133,8 @@ def classify_domains():
         else:
             # Process all domains if overwrite is enabled or no database
             domains_to_process = domains
+            if overwrite:
+                logger.info(f"Overwrite enabled - will reprocess all {len(domains)} domains")
         
         if not domains_to_process:
             logger.info("No new domains to process - all domains already exist in database")
@@ -162,7 +151,7 @@ def classify_domains():
                 "message": f"Scan complete in {duration_text}! All domains already processed. Use overwrite option to reprocess."
             })
         
-        logger.info(f"Processing {len(domains_to_process)} new domains (skipping {len(domains) - len(domains_to_process)} existing)")
+        logger.info(f"Processing {len(domains_to_process)} domains (skipping {len(domains) - len(domains_to_process)} existing)")
         
         # Generate batch ID
         batch_id = f"batch_{datetime.now().strftime('%Y%m%d_%H%M%S_%f')}"
@@ -181,10 +170,8 @@ def classify_domains():
                     "processing_method": text_method
                 })
         else:
-            # Use real processing with simplified error handling
-            successful_results = []
-            error_count = 0
-            
+            # Use real processing
+            results = []
             with ThreadPoolExecutor(max_workers=workers) as executor:
                 future_to_domain = {
                     executor.submit(process_domain, domain, text_method, headless, anti_detection): domain
@@ -195,23 +182,25 @@ def classify_domains():
                     domain = future_to_domain[future]
                     try:
                         result = future.result()
-                        if result is not None:  # Successful processing
+                        if result:
                             result["processing_method"] = text_method
-                            successful_results.append(result)
-                        else:  # Error occurred (logged only)
-                            error_count += 1
-                            logger.warning(f"Failed to process {domain} - error logged")
+                            results.append(result)
                     except Exception as e:
                         logger.error(f"Error processing {domain}: {e}")
-                        error_count += 1
-            
-            results = successful_results
+                        results.append({
+                            "domain": domain,
+                            "classification_label": "Error",
+                            "summary": str(e),
+                            "confidence_level": 0.0,
+                            "snippet": "Error occurred during processing",
+                            "processing_method": text_method
+                        })
         
-        # Store successful results in database
+        # Store results in database
         if db and results:
             try:
-                stored_batch_id = db.insert_results(results, batch_id, config)
-                logger.info(f"Stored {len(results)} successful results in database with batch_id: {stored_batch_id}")
+                stored_batch_id = db.insert_results(results, batch_id, config, overwrite=overwrite)
+                logger.info(f"Stored {len(results)} results in database with batch_id: {stored_batch_id}")
             except Exception as e:
                 logger.error(f"Error storing results in database: {e}")
                 # Continue without database storage
@@ -234,14 +223,10 @@ def classify_domains():
         else:
             message = f"Scan complete in {duration_text}! {len(domains) - len(domains_to_process)} domains already in database"
         
-        if error_count > 0:
-            message += f" ({error_count} errors logged)"
-
         return jsonify({
             "results": all_results,
             "batch_id": batch_id if results else None,
             "total_processed": len(results),
-            "errors": error_count,
             "skipped": len(domains) - len(domains_to_process),
             "duration_seconds": duration,
             "duration_text": duration_text,
@@ -456,42 +441,6 @@ def vacuum_database():
     except Exception as e:
         logger.error(f"Error vacuuming database: {e}")
         return jsonify({"error": "Failed to optimize database"}), 500
-
-@app.route('/database/clear', methods=['POST'])
-def clear_database():
-    """Clear all data from the database (destructive operation)."""
-    if not db:
-        return jsonify({"error": "Database not available"}), 503
-    
-    try:
-        result = db.clear_all_data()
-        return jsonify(result)
-        
-    except Exception as e:
-        logger.error(f"Error clearing database: {e}")
-        return jsonify({
-            "success": False,
-            "error": str(e),
-            "message": "Failed to clear database"
-        }), 500
-
-@app.route('/database/reset', methods=['POST'])
-def reset_database():
-    """Reset the entire database by recreating all tables (destructive operation)."""
-    if not db:
-        return jsonify({"error": "Database not available"}), 503
-    
-    try:
-        result = db.reset_database()
-        return jsonify(result)
-        
-    except Exception as e:
-        logger.error(f"Error resetting database: {e}")
-        return jsonify({
-            "success": False,
-            "error": str(e),
-            "message": "Failed to reset database"
-        }), 500
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5001))  # Default to 5001
