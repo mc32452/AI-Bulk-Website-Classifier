@@ -53,8 +53,8 @@ CLASSIFY_SITE_TOOL = {
             "type": "object",
             "properties": {
                 "domain": {"type": "string", "description": "The domain name of the website"},
-                "classification_label": {"type": "string", "enum": ["Marketing", "Portal", "Other", "Error"],
-                    "description": "The primary classification category: 'Marketing', 'Portal', 'Other', or 'Error'"},
+                "classification_label": {"type": "string", "enum": ["Marketing", "Portal", "Other"],
+                    "description": "The primary classification category: 'Marketing', 'Portal', or 'Other'"},
                 "summary": {"type": "string", "description": "A very brief summary of the website's purpose and content"},
                 "confidence_level": {"type": "number", "description": "A self-reported confidence level between 0.0 and 1.0"}  # Added confidence level
             },
@@ -75,7 +75,7 @@ def classify_site(domain: str, html_text: str, ocr_text: str) -> Dict:
         f"Classify the website domain: {domain}\n\n"
         f"HTML Content: {html_text[:3000] if html_text else 'No HTML content available'}\n\n"
         f"OCR Text: {ocr_text[:1000] if ocr_text else 'No OCR content available'}\n\n"
-        "Please classify this website into one of: Marketing, Portal, Other, Error. "
+        "Please classify this website into one of: Marketing, Portal, Other. "
         "Provide a brief summary. Also return your confidence level as a number between 0 and 1."
     )
     
@@ -139,14 +139,9 @@ def classify_site(domain: str, html_text: str, ocr_text: str) -> Dict:
                 import time
                 time.sleep(2 ** attempts)
     
-    # If all retries failed, return an error classification
+    # If all retries failed, raise an exception instead of returning error classification
     logging.error(f"Failed to classify site after {max_retries} attempts: {domain}")
-    return {
-        "domain": domain,
-        "classification_label": "Error",
-        "summary": f"Failed to classify due to API errors after {max_retries} attempts",
-        "confidence_level": 0.0  # Default confidence for errors
-    }
+    raise Exception(f"Failed to classify due to API errors after {max_retries} attempts")
 
 def get_ai_provider_info() -> Dict:
     """

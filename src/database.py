@@ -50,6 +50,8 @@ class ClassificationDatabase:
             conn.execute("CREATE INDEX IF NOT EXISTS idx_batch ON classification_results(batch_id)")
             conn.execute("CREATE INDEX IF NOT EXISTS idx_processed_at ON classification_results(processed_at)")
             
+
+            
             # Create table for batch metadata
             conn.execute("""
                 CREATE TABLE IF NOT EXISTS batch_metadata (
@@ -79,6 +81,9 @@ class ClassificationDatabase:
         if batch_id is None:
             batch_id = f"batch_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
         
+        # Filter out any error results - we only store successful classifications
+        successful_results = [r for r in results if r.get('classification_label', '').lower() != 'error']
+        
         with sqlite3.connect(self.db_path) as conn:
             # Insert batch metadata
             if config:
@@ -86,10 +91,10 @@ class ClassificationDatabase:
                     INSERT OR REPLACE INTO batch_metadata 
                     (batch_id, total_domains, config, started_at, status)
                     VALUES (?, ?, ?, ?, ?)
-                """, (batch_id, len(results), json.dumps(config), datetime.now(), 'processing'))
+                """, (batch_id, len(successful_results), json.dumps(config), datetime.now(), 'processing'))
             
-            # Insert results
-            for result in results:
+            # Insert successful results only
+            for result in successful_results:
                 conn.execute("""
                     INSERT INTO classification_results 
                     (domain, classification_label, summary, confidence_level, snippet, 
@@ -118,9 +123,10 @@ class ClassificationDatabase:
             
             conn.commit()
         
-        logger.info(f"Inserted {len(results)} results with batch_id: {batch_id}")
+        logger.info(f"Inserted {len(successful_results)} results with batch_id: {batch_id}")
         return batch_id
-    
+
+
     def get_results(self, 
                    limit: int = None,
                    offset: int = 0,
@@ -204,11 +210,14 @@ class ClassificationDatabase:
         
         # Get total count
         total_query = "SELECT COUNT(*) FROM classification_results"
+        total_params = []
+        
         if batch_id:
             total_query += " WHERE batch_id = ?"
+            total_params.append(batch_id)
         
         with sqlite3.connect(self.db_path) as conn:
-            cursor = conn.execute(total_query, params[:1] if batch_id else [])
+            cursor = conn.execute(total_query, total_params)
             total_count = cursor.fetchone()[0]
         
         return {
@@ -441,51 +450,9 @@ def export_results_to_csv(filename: str, **filters) -> str:
 
 
 if __name__ == "__main__":
-    # Example usage and testing
+    # Basic database initialization check
     db = ClassificationDatabase()
-    
-    # Test data
-    test_results = [
-        {
-            "domain": "example.com",
-            "classification_label": "Marketing",
-            "summary": "Marketing website for products",
-            "confidence_level": 0.85,
-            "snippet": "Welcome to our products...",
-            "html_content": "Welcome to our products page. We offer a wide range of high-quality items for your business needs. Our team is dedicated to providing excellent customer service and competitive pricing.",
-            "ocr_content": "",
-            "extraction_method": "html",
-            "processing_method": "HTML"
-        },
-        {
-            "domain": "portal.company.com",
-            "classification_label": "Portal",
-            "summary": "Employee portal system",
-            "confidence_level": 0.92,
-            "snippet": "Login to access your account...",
-            "html_content": "Login to access your employee account. Please enter your credentials below. If you need assistance, contact IT support.",
-            "ocr_content": "EMPLOYEE PORTAL\nLogin\nUsername: [____]\nPassword: [____]\n[Login Button]",
-            "extraction_method": "both",
-            "processing_method": "HTML"
-        }
-    ]
-    
-    # Insert test data
-    batch_id = db.insert_results(test_results, config={"method": "HTML"})
-    print(f"Inserted test data with batch_id: {batch_id}")
-    
-    # Query results
-    results = db.get_results(limit=10)
-    print(f"Retrieved {len(results)} results")
-    
-    # Get statistics
-    stats = db.get_statistics()
-    print(f"Statistics: {stats}")
-    
-    # Export to CSV
-    csv_file = db.export_to_csv("test_export.csv")
-    print(f"Exported to: {csv_file}")
-    
-    # Database info
     info = db.get_database_info()
-    print(f"Database info: {info}")
+    print(f"Database initialized: {info['database_path']}")
+    print(f"Total results: {info['total_results']}")
+    print(f"Total batches: {info['total_batches']}")

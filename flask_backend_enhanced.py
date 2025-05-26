@@ -181,8 +181,10 @@ def classify_domains():
                     "processing_method": text_method
                 })
         else:
-            # Use real processing
-            results = []
+            # Use real processing with simplified error handling
+            successful_results = []
+            error_count = 0
+            
             with ThreadPoolExecutor(max_workers=workers) as executor:
                 future_to_domain = {
                     executor.submit(process_domain, domain, text_method, headless, anti_detection): domain
@@ -193,25 +195,23 @@ def classify_domains():
                     domain = future_to_domain[future]
                     try:
                         result = future.result()
-                        if result:
+                        if result is not None:  # Successful processing
                             result["processing_method"] = text_method
-                            results.append(result)
+                            successful_results.append(result)
+                        else:  # Error occurred (logged only)
+                            error_count += 1
+                            logger.warning(f"Failed to process {domain} - error logged")
                     except Exception as e:
                         logger.error(f"Error processing {domain}: {e}")
-                        results.append({
-                            "domain": domain,
-                            "classification_label": "Error",
-                            "summary": str(e),
-                            "confidence_level": 0.0,
-                            "snippet": "Error occurred during processing",
-                            "processing_method": text_method
-                        })
+                        error_count += 1
+            
+            results = successful_results
         
-        # Store results in database
+        # Store successful results in database
         if db and results:
             try:
                 stored_batch_id = db.insert_results(results, batch_id, config)
-                logger.info(f"Stored {len(results)} results in database with batch_id: {stored_batch_id}")
+                logger.info(f"Stored {len(results)} successful results in database with batch_id: {stored_batch_id}")
             except Exception as e:
                 logger.error(f"Error storing results in database: {e}")
                 # Continue without database storage
@@ -234,10 +234,14 @@ def classify_domains():
         else:
             message = f"Scan complete in {duration_text}! {len(domains) - len(domains_to_process)} domains already in database"
         
+        if error_count > 0:
+            message += f" ({error_count} errors logged)"
+
         return jsonify({
             "results": all_results,
             "batch_id": batch_id if results else None,
             "total_processed": len(results),
+            "errors": error_count,
             "skipped": len(domains) - len(domains_to_process),
             "duration_seconds": duration,
             "duration_text": duration_text,

@@ -59,7 +59,7 @@ def process_domain(domain: str, text_method: str = 'html', headless: bool = True
         anti_detection: If True, applies anti-bot detection measures
         
     Returns:
-        Classification dict with snippet and full content included.
+        Classification dict with snippet and full content included, or None if error occurred.
     """
     try:
         html, screenshot = fetch_site_enhanced(domain, headless=headless, anti_detection=anti_detection)
@@ -94,18 +94,9 @@ def process_domain(domain: str, text_method: str = 'html', headless: bool = True
         
         return result
     except Exception as e:
-        logging.error(f"Error processing {domain}: {e}")
-        return {
-            "domain": domain, 
-            "classification_label": "Error", 
-            "summary": str(e),
-            "confidence_level": 0.0,
-            "snippet": "Error occurred during processing",
-            "html_content": "",
-            "ocr_content": "",
-            "extraction_method": text_method,
-            "processing_method": "Error"
-        }
+        logging.error(f"❌ Error processing {domain}: {e}")
+        # Just return None - errors are logged but not stored
+        return None
 
 
 def main():
@@ -129,7 +120,7 @@ def main():
     logging.basicConfig(level=logging.INFO)
 
     processed_domains = set()
-    existing_results_data = [] # To store existing data if not overwriting
+    existing_results_data = []
 
     if not args.overwrite and os.path.exists(args.output):
         try:
@@ -141,7 +132,7 @@ def main():
                     for row in reader:
                         if 'domain' in row and row['domain']:
                             processed_domains.add(row['domain'])
-                            existing_results_data.append(row) # Keep existing data
+                            existing_results_data.append(row)
             if processed_domains:
                 logging.info(f"Found {len(processed_domains)} domains in existing output file '{args.output}'. They will be skipped unless --overwrite is used.")
         except FileNotFoundError:
@@ -150,6 +141,18 @@ def main():
             logging.warning(f"Could not read existing output file {args.output}: {e}. Will process all domains.")
             processed_domains.clear()
             existing_results_data.clear()
+
+    # Also check database for existing domains (to prevent duplicates)
+    if not args.overwrite:
+        try:
+            from src.database import ClassificationDatabase
+            db = ClassificationDatabase()
+            existing_in_db = db.get_results()
+            db_domains = {result['domain'] for result in existing_in_db}
+            processed_domains.update(db_domains)
+            logging.info(f"Found {len(db_domains)} domains already in database. They will be skipped unless --overwrite is used.")
+        except Exception as e:
+            logging.warning(f"Could not check database for existing domains: {e}. Will process all domains.")
     
     # Adjust settings for headful mode
     headless = not args.headful
@@ -192,6 +195,16 @@ def main():
             print(f'\n🎉 No domains to process and no existing results found in {args.output}')
         return # Exit if no domains to process
 
+    # Create configuration object for database storage
+    config = {
+        "method": args.method,
+        "headless": not args.headful,
+        "anti_detection": args.anti_detection,
+        "workers": args.workers,
+        "domains_file": args.domains,
+        "output_file": args.output
+    }
+
     results = {}
     # Initialize results with indices for all domains_to_process to maintain order later
     for i, domain in enumerate(domains_to_process):
@@ -205,33 +218,28 @@ def main():
         
         for future in as_completed(future_to_domain_index):
             original_index = future_to_domain_index[future]
+            domain = domains_to_process[original_index]
             try:
                 result = future.result()
-                results[original_index] = result # Store new results at their original index
-                if result and result.get("domain") and result.get("classification_label"):
+                if result is not None:  # Successful processing
+                    results[original_index] = result
                     logging.info(f"✅ Completed {result['domain']}: {result['classification_label']}")
-                else:
-                    # This case should ideally be handled by process_domain returning an Error dict
-                    logging.error(f"Received incomplete result for a domain at index {original_index}")
-                    # Ensure a placeholder error is there if process_domain failed to return one
-                    if results[original_index] is None or not results[original_index].get("domain"):
-                         results[original_index] = {"domain": domains_to_process[original_index], "classification_label": "Error", "summary": "Processing failed internally"}
+                else:  # Error occurred (already logged)
+                    logging.info(f"❌ Skipped {domain} due to error")
 
             except Exception as e:
-                logging.error(f"Error processing domain {domains_to_process[original_index]}: {e}")
-                results[original_index] = {"domain": domains_to_process[original_index], "classification_label": "Error", "summary": str(e)}
+                logging.error(f"❌ Exception processing {domain}: {e}")
 
-    # Filter out any None placeholders if some futures failed catastrophically before returning
-    ordered_new_results = [res for res in results.values() if res is not None] 
+    # Filter out None results (errors) - only successful results go to database
+    successful_results = [res for res in results.values() if res is not None] 
 
     final_results_map = {}
     if not args.overwrite:
         for row in existing_results_data:
             final_results_map[row['domain']] = row
     
-    for res in ordered_new_results:
+    for res in successful_results:
         final_results_map[res['domain']] = res
-                                            # Or add new ones.
 
     # Reconstruct final_results based on the order in all_input_domains
     final_ordered_results = []
@@ -239,36 +247,26 @@ def main():
         if domain_in_input_file in final_results_map:
             final_ordered_results.append(final_results_map[domain_in_input_file])
     
-    # Create configuration object for database storage
-    config = {
-        "method": args.method,
-        "headless": not args.headful,
-        "anti_detection": args.anti_detection,
-        "workers": args.workers,
-        "domains_file": args.domains,
-        "output_file": args.output
-    }
-    
+    # Write results to database and CSV
     batch_id = write_results(final_ordered_results, args.output, config=config)
     
     print(f'\n🎉 Pipeline completed. Results written to {args.output}')
     print(f'📦 Database batch ID: {batch_id}')
     
     # Show summary
-    total = len(final_ordered_results)
-    errors = len([r for r in final_ordered_results if r['classification_label'] == 'Error'])
-    success = total - errors
+    total_attempted = len(domains_to_process)
+    successful = len(successful_results)
+    errors = total_attempted - successful
     
     print(f"📊 Summary:")
-    print(f"   Total domains: {total}")
-    print(f"   Successful: {success}")
-    print(f"   Errors: {errors}")
+    print(f"   Total domains attempted: {total_attempted}")
+    print(f"   Successful: {successful}")
+    print(f"   Errors (logged only): {errors}")
     
     if errors > 0:
-        print(f"\n❌ Domains with errors:")
-        for result in final_ordered_results:
-            if result['classification_label'] == 'Error':
-                print(f"   - {result['domain']}: {result['summary']}")
+        print(f"\n❌ {errors} domains failed processing - check logs for details")
+    
+    print(f"\n📈 Use 'python manage_database.py --info' to see detailed statistics")
 
 
 if __name__ == '__main__':
