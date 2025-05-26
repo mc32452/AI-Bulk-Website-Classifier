@@ -58,9 +58,10 @@ def format_scan_duration(duration_seconds):
 
 @app.route('/health', methods=['GET'])
 def health_check():
-    """Health check endpoint."""
+    """Health check endpoint with AI provider information."""
     status = {"status": "healthy", "timestamp": datetime.now().isoformat()}
     
+    # Database status
     if db:
         try:
             db_info = db.get_database_info()
@@ -74,6 +75,18 @@ def health_check():
             status["database"] = {"connected": False, "error": str(e)}
     else:
         status["database"] = {"connected": False, "error": "Database module not available"}
+    
+    # AI provider status
+    try:
+        from src.openai_client import get_ai_provider_info, test_ai_connection
+        ai_test = test_ai_connection()
+        status["ai_provider"] = ai_test
+    except Exception as e:
+        status["ai_provider"] = {
+            "success": False,
+            "error": str(e),
+            "message": "Failed to load AI provider configuration"
+        }
     
     return jsonify(status)
 

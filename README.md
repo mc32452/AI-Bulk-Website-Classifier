@@ -72,15 +72,32 @@ npm run build
 Create a `.env` file with your API credentials:
 
 ```bash
-# OpenAI Configuration
-OPENAI_API_KEY=your_api_key_here
+# ========================================
+# AI Provider Configuration
+# ========================================
+# Choose ONE of the following configurations:
 
-# Or Azure OpenAI Configuration
-AZURE_OPENAI_API_KEY=your_azure_api_key
-AZURE_OPENAI_ENDPOINT=https://your-resource.openai.azure.com/
-AZURE_OPENAI_API_VERSION=2024-02-15-preview
-AZURE_OPENAI_DEPLOYMENT_NAME=your-deployment-name
+# Option 1: OpenAI (Recommended for simplicity)
+# ----------------------------------------
+OPENAI_API_KEY=your_openai_api_key_here
+
+# Option 2: Azure OpenAI (Enterprise/Custom deployments)
+# ----------------------------------------
+# AZURE_OPENAI_API_KEY=your_azure_api_key_here
+# AZURE_OPENAI_ENDPOINT=https://your-resource.openai.azure.com/
+# AZURE_OPENAI_API_VERSION=2024-02-15-preview
+# AZURE_OPENAI_DEPLOYMENT_NAME=your-deployment-name
 ```
+
+### 🔄 **Easy Provider Switching**
+
+**No code changes required!** The system automatically detects your configuration:
+
+- **For OpenAI**: Just set `OPENAI_API_KEY`
+- **For Azure OpenAI**: Set the four Azure variables (the system will auto-detect and use Azure)
+- Switch anytime by changing environment variables and restarting
+
+The web interface will show which AI provider is currently active in the status bar.
 
 ## Quick Start
 

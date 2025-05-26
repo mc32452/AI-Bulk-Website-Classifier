@@ -57,6 +57,15 @@ interface ProcessingConfig {
 interface HealthStatus {
   backend: boolean;
   lastChecked: Date | null;
+  aiProvider?: {
+    success: boolean;
+    provider_info?: {
+      provider: string;
+      model: string;
+      endpoint: string;
+    };
+    message?: string;
+  };
 }
 
 // Add interface for domain validation
@@ -200,10 +209,20 @@ export function WebsiteClassifier() {
       const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5001';
       const response = await fetch(`${backendUrl}/health`);
       const isHealthy = response.ok;
-      setHealthStatus({
-        backend: isHealthy,
-        lastChecked: new Date(),
-      });
+      
+      if (isHealthy) {
+        const healthData = await response.json();
+        setHealthStatus({
+          backend: true,
+          lastChecked: new Date(),
+          aiProvider: healthData.ai_provider
+        });
+      } else {
+        setHealthStatus({
+          backend: false,
+          lastChecked: new Date(),
+        });
+      }
       return isHealthy;
     } catch (error) {
       console.error('Health check failed:', error);
@@ -588,6 +607,21 @@ export function WebsiteClassifier() {
                   Backend: {healthStatus.backend ? 'Online' : 'Offline'}
                 </span>
               </div>
+              
+              {/* AI Provider Status */}
+              {healthStatus.aiProvider && (
+                <div className="h-8 px-3 border border-border/40 rounded-md flex items-center space-x-2 bg-background/90 hover:bg-background/95 backdrop-blur-sm transition-all duration-200">
+                  <div className={`w-2.5 h-2.5 rounded-full ${healthStatus.aiProvider.success ? 'bg-blue-600' : 'bg-red-600'}`} />
+                  <span className="text-xs font-medium text-foreground">
+                    AI: {healthStatus.aiProvider.provider_info?.provider || 'Unknown'}
+                  </span>
+                  {healthStatus.aiProvider.provider_info?.model && (
+                    <span className="text-xs text-muted-foreground">
+                      ({healthStatus.aiProvider.provider_info.model})
+                    </span>
+                  )}
+                </div>
+              )}
             </div>
             <div className="flex items-center space-x-2">
               <Tooltip>
@@ -1139,8 +1173,8 @@ export function WebsiteClassifier() {
                           /* Skeleton Loading */
                           <div className="p-4">
                             <div className="space-y-3">
-                              {parseDomains(domains).slice(0, 6).map((domain, index) => (
-                                <div key={`skeleton-${domain}-${index}`} className="flex items-center space-x-4">
+                              {parseDomains(domains).slice(0, 6).map((domain) => (
+                                <div key={`skeleton-${domain}`} className="flex items-center space-x-4">
                                   <div className="h-4 bg-muted/50 rounded skeleton w-32" />
                                   <div className="h-6 bg-muted/50 rounded skeleton w-20" />
                                   <div className="h-4 bg-muted/30 rounded skeleton flex-1" />
