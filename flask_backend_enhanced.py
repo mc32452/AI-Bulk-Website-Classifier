@@ -453,6 +453,42 @@ def vacuum_database():
         logger.error(f"Error vacuuming database: {e}")
         return jsonify({"error": "Failed to optimize database"}), 500
 
+@app.route('/database/clear', methods=['POST'])
+def clear_database():
+    """Clear all data from the database (destructive operation)."""
+    if not db:
+        return jsonify({"error": "Database not available"}), 503
+    
+    try:
+        result = db.clear_all_data()
+        return jsonify(result)
+        
+    except Exception as e:
+        logger.error(f"Error clearing database: {e}")
+        return jsonify({
+            "success": False,
+            "error": str(e),
+            "message": "Failed to clear database"
+        }), 500
+
+@app.route('/database/reset', methods=['POST'])
+def reset_database():
+    """Reset the entire database by recreating all tables (destructive operation)."""
+    if not db:
+        return jsonify({"error": "Database not available"}), 503
+    
+    try:
+        result = db.reset_database()
+        return jsonify(result)
+        
+    except Exception as e:
+        logger.error(f"Error resetting database: {e}")
+        return jsonify({
+            "success": False,
+            "error": str(e),
+            "message": "Failed to reset database"
+        }), 500
+
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5001))  # Default to 5001
     debug = os.environ.get('DEBUG', 'false').lower() == 'true'

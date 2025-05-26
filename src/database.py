@@ -346,7 +346,76 @@ class ClassificationDatabase:
                 "total_results": total_results,
                 "total_batches": total_batches
             }
+    
+    def clear_all_data(self) -> Dict:
+        """
+        Clear all data from the database (classification results and batch metadata).
+        This is a destructive operation that cannot be undone.
+        
+        Returns:
+            Dictionary with deletion counts and status
+        """
+        results_deleted = 0
+        batches_deleted = 0
+        
+        with sqlite3.connect(self.db_path) as conn:
+            # Count before deletion
+            cursor = conn.execute("SELECT COUNT(*) FROM classification_results")
+            results_deleted = cursor.fetchone()[0]
+            
+            cursor = conn.execute("SELECT COUNT(*) FROM batch_metadata")
+            batches_deleted = cursor.fetchone()[0]
+            
+            # Delete all data
+            conn.execute("DELETE FROM classification_results")
+            conn.execute("DELETE FROM batch_metadata")
+            
+            # Reset auto-increment counters
+            conn.execute("DELETE FROM sqlite_sequence WHERE name IN ('classification_results', 'batch_metadata')")
+            
+            conn.commit()
+        
+        logger.info(f"Cleared all database data - {results_deleted} results and {batches_deleted} batches deleted")
+        
+        return {
+            "success": True,
+            "results_deleted": results_deleted,
+            "batches_deleted": batches_deleted,
+            "message": f"Successfully cleared all data - {results_deleted} results and {batches_deleted} batches deleted"
+        }
 
+    def reset_database(self) -> Dict:
+        """
+        Reset the entire database by dropping and recreating all tables.
+        This is the most thorough reset option.
+        
+        Returns:
+            Dictionary with reset status
+        """
+        try:
+            with sqlite3.connect(self.db_path) as conn:
+                # Drop all tables
+                conn.execute("DROP TABLE IF EXISTS classification_results")
+                conn.execute("DROP TABLE IF EXISTS batch_metadata")
+                conn.execute("DELETE FROM sqlite_sequence")
+                conn.commit()
+            
+            # Recreate database schema
+            self.init_database()
+            
+            logger.info("Database completely reset - all tables recreated")
+            
+            return {
+                "success": True,
+                "message": "Database completely reset - all tables recreated with fresh schema"
+            }
+        except Exception as e:
+            logger.error(f"Error resetting database: {e}")
+            return {
+                "success": False,
+                "error": str(e),
+                "message": f"Failed to reset database: {str(e)}"
+            }
 
 # Convenience functions for backward compatibility
 def write_results(results: List[Dict], output_file: str = None, batch_id: str = None) -> str:
