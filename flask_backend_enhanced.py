@@ -58,9 +58,10 @@ def format_scan_duration(duration_seconds):
 
 @app.route('/health', methods=['GET'])
 def health_check():
-    """Health check endpoint."""
+    """Health check endpoint with AI provider information."""
     status = {"status": "healthy", "timestamp": datetime.now().isoformat()}
     
+    # Database status
     if db:
         try:
             db_info = db.get_database_info()
@@ -74,6 +75,18 @@ def health_check():
             status["database"] = {"connected": False, "error": str(e)}
     else:
         status["database"] = {"connected": False, "error": "Database module not available"}
+    
+    # AI provider status
+    try:
+        from src.openai_client import get_ai_provider_info, test_ai_connection
+        ai_test = test_ai_connection()
+        status["ai_provider"] = ai_test
+    except Exception as e:
+        status["ai_provider"] = {
+            "success": False,
+            "error": str(e),
+            "message": "Failed to load AI provider configuration"
+        }
     
     return jsonify(status)
 
@@ -124,7 +137,7 @@ def classify_domains():
         if db and not overwrite:
             # Check which domains already exist in the database
             for domain in domains:
-                existing = db.get_results_by_domain(domain)  # Use exact domain match
+                existing = db.get_results(domain_filter=domain, limit=1)
                 if existing:
                     logger.info(f"Skipping already processed domain: {domain}")
                     existing_results.extend(existing)
@@ -133,8 +146,6 @@ def classify_domains():
         else:
             # Process all domains if overwrite is enabled or no database
             domains_to_process = domains
-            if overwrite:
-                logger.info(f"Overwrite enabled - will reprocess all {len(domains)} domains")
         
         if not domains_to_process:
             logger.info("No new domains to process - all domains already exist in database")
@@ -151,7 +162,7 @@ def classify_domains():
                 "message": f"Scan complete in {duration_text}! All domains already processed. Use overwrite option to reprocess."
             })
         
-        logger.info(f"Processing {len(domains_to_process)} domains (skipping {len(domains) - len(domains_to_process)} existing)")
+        logger.info(f"Processing {len(domains_to_process)} new domains (skipping {len(domains) - len(domains_to_process)} existing)")
         
         # Generate batch ID
         batch_id = f"batch_{datetime.now().strftime('%Y%m%d_%H%M%S_%f')}"
@@ -199,7 +210,7 @@ def classify_domains():
         # Store results in database
         if db and results:
             try:
-                stored_batch_id = db.insert_results(results, batch_id, config, overwrite=overwrite)
+                stored_batch_id = db.insert_results(results, batch_id, config)
                 logger.info(f"Stored {len(results)} results in database with batch_id: {stored_batch_id}")
             except Exception as e:
                 logger.error(f"Error storing results in database: {e}")
