@@ -82,8 +82,12 @@ temp/
 *.pdf
 *.docx
 
-# Test outputs
-test_
+# Test outputs and debugging scripts
+test_*
+*_test.py
+test*.py
+debug_*
+*_debug.py
 
 # Node.js dependencies
 node_modules/
